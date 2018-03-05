@@ -29,9 +29,21 @@ class image_upload(views.APIView):
             csv_file = request.FILES['csv_file']
 
             if not csv_file.name.endswith('.csv'):
+                print ('File is not a CSV.')
                 return Response(template_name='failure_csv.html')
 
-            self.consume_csv(csv_file)
+            file_data = csv_file.read().decode("utf-8")  
+            lines = file_data.split("\n")
+            reader = csv.DictReader(lines, delimiter=',', quotechar='|')
+
+            if not (self.verify_keys(reader)):
+                print ("key failure")
+                return Response(template_name='failure_csv.html')
+
+            if (self.consume_csv(reader)):
+                print ('is')
+            else:
+                print ('not')
 
             return Response(template_name='success_csv.html')
         
@@ -39,24 +51,75 @@ class image_upload(views.APIView):
             print (error)
             return Response(template_name='failure_csv.html')
 
-    def consume_csv(self, file):
-        file_data = file.read()
-        newCsv = []
+    def consume_csv(self, reader):        
 
-        with open(file_data, 'rb') as csvfile:
-            reader = csv.DictReader(csvfile)
-            row1 = next(reader)
-            #print(row1)
-            if self.validate_fields(row1):
-                for row in reader:
-                    newCsv.append(row)
+        #row = next(reader)
+        # print (reader.fieldnames)
+        for row in reader:
+            try:
+                rowtest = {'item_sku': '2544', 'item_name': 'test1', 'image_height': 1, 'image_width':1, 
+            'main_image_url':'test', 'main_image_path':'test', 'category':'test', 'collection':'test', 'sub_collection':'test'}
+                serializer = ImageSerializer(data=rowtest)
+                if serializer.is_valid():
+                    serializer.save()
+                    return True
+                return False
+            except Exception as error:
+                print(error)
+                return False
+            #print(row['item_sku'])
 
+
+        #return data_dict
+
+    def validate_fields(self, row):
+        return True
+
+    def verify_keys(self, reader):
+        keys = reader.fieldnames
+
+        schema = ['item_sku', 'item_name', 'image_height', 'image_width', 
+            'main_image_url', 'main_image_path', 'category', 'collection', 'sub_collection']
+
+        if keys != schema:
+            return False
+
+        return True
+
+        '''
+        reader = csv.DictReader(file)
+        for row in reader:
+            print (row)
+        try:
+            reader = csv.DictReader(file)
+        except Exception as e:
+            print(e)
+        '''
+        #row1 = next(reader)
+        
+
+        '''
+        try:
+            with open(file, 'rb') as csvfile:
+                print ('hello')
+                reader = csv.DictReader(csvfile)
+                row1 = next(reader)
+                row1 = next(reader)
+
+                print('dix')
+                if self.validate_fields(row1):
+                    for row in reader:
+                        newCsv.append(row)
+
+        except Exception as e:
+            print (e)
+        '''
         #for item in newCsv:
         #    print(item)  
 
-    def validate_fields(self, row):
-        #print (row)
-        return True
+
+
+
 '''
  data = {}
     if "GET" == request.method:
