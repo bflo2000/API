@@ -35,15 +35,16 @@ class image_upload(views.APIView):
             file_data = csv_file.read().decode("utf-8")  
             lines = file_data.split("\n")
             reader = csv.DictReader(lines, delimiter=',', quotechar='|')
-
+            '''
             if not (self.verify_keys(reader)):
                 print ("key failure")
                 return Response(template_name='failure_csv.html')
-
+            '''
             if (self.consume_csv(reader)):
                 print ('is')
             else:
                 print ('not')
+                return Response(template_name='failure_csv.html')
 
             return Response(template_name='success_csv.html')
         
@@ -53,33 +54,26 @@ class image_upload(views.APIView):
 
     def consume_csv(self, reader):        
 
-        #row = next(reader)
-        # print (reader.fieldnames)
         for row in reader:
             try:
-                rowtest = {'item_sku': '2544', 'item_name': 'test1', 'image_height': 1, 'image_width':1, 
-            'main_image_url':'test', 'main_image_path':'test', 'category':'test', 'collection':'test', 'sub_collection':'test'}
-                serializer = ImageSerializer(data=rowtest)
+               
+                serializer = ImageSerializer(data=row)
                 if serializer.is_valid():
                     serializer.save()
                     return True
+                print (serializer.errors)
                 return False
             except Exception as error:
                 print(error)
                 return False
-            #print(row['item_sku'])
-
-
-        #return data_dict
 
     def validate_fields(self, row):
         return True
 
     def verify_keys(self, reader):
         keys = reader.fieldnames
-
-        schema = ['item_sku', 'item_name', 'image_height', 'image_width', 
-            'main_image_url', 'main_image_path', 'category', 'collection', 'sub_collection']
+        schema = ['sku', 'name', 'height', 'width', 'description', 'url', 'path',
+            'category', 'collection', 'sub_collection']
 
         if keys != schema:
             return False
