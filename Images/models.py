@@ -17,5 +17,5 @@ class Image(models.Model):
     path = models.CharField(max_length=400)
     variations = models.CharField(max_length=400)
     variation_group = models.CharField(max_length=20)
-    info = models.CharField() #
-    validated = models.Boolean()
+    info = models.CharField(max_length=200) #
+    validated = models.BooleanField()
