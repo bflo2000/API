@@ -35,6 +35,7 @@ class image_upload(views.APIView):
             file_data = csv_file.read().decode("utf-8")  
             lines = file_data.split("\n")
             reader = csv.DictReader(lines, delimiter=',', quotechar='|')
+
             '''
             if not (self.verify_keys(reader)):
                 print ("key failure")
@@ -56,16 +57,17 @@ class image_upload(views.APIView):
 
         for row in reader:
             try:
-               
                 serializer = ImageSerializer(data=row)
                 if serializer.is_valid():
                     serializer.save()
-                    return True
-                print (serializer.errors)
-                return False
+                else:
+                    print (serializer.errors)
+                    return False
             except Exception as error:
                 print(error)
                 return False
+
+        return True
 
     def validate_fields(self, row):
         return True
