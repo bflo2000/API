@@ -106,6 +106,7 @@ venv.bak/
 *.xls
 *.xlsx
 *.xml
+*.pyc
 
 HPAPI/settings.py
 HPAPI/Images/migrations
