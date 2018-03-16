@@ -22,3 +22,10 @@ class Amazon_Variation(models.Model):
 	bullet5 = models.CharField(max_length=200)
 	keywords = models.CharField(max_length=20000)
 	sales = models.DecimalField(max_digits = 10, decimal_places=2)
+
+class Verification_Table(models.Model):
+	sku = models.OneToOneField(Amazon_Variation, on_delete=models.CASCADE)
+	size_verfied = models.BooleanField()
+	bullets_verified = models.BooleanField()
+	price_verified = models.BooleanField()
+	keywords_verified = models.BooleanField()
