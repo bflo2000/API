@@ -14,6 +14,7 @@ class Amazon_Variation(models.Model):
 	size_name = models.CharField(max_length=200, null=True, blank=True)
 	variation_theme = models.CharField(max_length=200)
 	product_tax_code = models.CharField(max_length=200)
+	currency = models.CharField(max_length=16)
 	parent = models.BooleanField()
 	bullet1 = models.CharField(max_length=200)
 	bullet2 = models.CharField(max_length=200)
