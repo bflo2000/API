@@ -3,6 +3,7 @@ from django.db import models
 class Image(models.Model):
     sku = models.CharField(max_length=16, unique=True)
     root_sku = models.CharField(max_length=16, unique=True)
+    old_sku = models.CharField(max_length=200, null=True, blank=True)
     name = models.CharField(max_length=128)
     height = models.IntegerField()
     width = models.IntegerField()
