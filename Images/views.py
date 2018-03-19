@@ -34,13 +34,8 @@ class image_upload(views.APIView):
 
             file_data = csv_file.read().decode("utf-8")  
             lines = file_data.split("\n")
-            reader = csv.DictReader(lines, delimiter=',', quotechar='|')
+            reader = csv.DictReader(lines)
 
-            '''
-            if not (self.verify_keys(reader)):
-                print ("key failure")
-                return Response(template_name='failure_csv.html')
-            '''
             if (self.consume_csv(reader)):
                 print ('is')
             else:
