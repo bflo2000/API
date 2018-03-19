@@ -109,5 +109,5 @@ venv.bak/
 *.pyc
 
 HPAPI/settings.py
-HPAPI/Images/migrations
-HPAPI/Amazon/migrations
+HPAPI/Images/migrations/
+HPAPI/Amazon/migrations/
