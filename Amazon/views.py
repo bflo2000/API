@@ -54,7 +54,6 @@ class amazon_variation_upload(views.APIView):
 			data = {}
 
 			try:
-				#print(row['parent_sku'])
 				row['parent_sku'] = '101579P'
 
 				image = Image.objects.get(sku=row['parent_sku'])
@@ -74,8 +73,6 @@ class amazon_variation_upload(views.APIView):
 					data['is_parent'] = True
 				else:
 					data['is_parent'] = False
-
-				#data['parent_sku'] = row['parent_sku']
 
 				data['bullet1'] = row['bullet_point1']
 				data['bullet2'] = row['bullet_point2']
