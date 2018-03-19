@@ -106,7 +106,12 @@ venv.bak/
 *.xls
 *.xlsx
 *.xml
+*.pyc
 
 HPAPI/settings.py
+HPAPI/Images/migrations/
+HPAPI/Amazon/migrations/
 HPAPI/Images/migrations
 HPAPI/Amazon/migrations
+HPAPI/Images/__pycache__/
+HPAPI/Amazon/__pycache__/
