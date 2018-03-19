@@ -54,13 +54,7 @@ class amazon_variation_upload(views.APIView):
 			data = {}
 
 			try:
-<<<<<<< HEAD
-				
-				#row['parent_sku'] = '101579P'
-=======
 				row['parent_sku'] = '101579P'
-
->>>>>>> bc724a99866e820a60fe6b4178733651226ae7ce
 				image = Image.objects.get(sku=row['parent_sku'])
 				data['parent_sku'] = image.id
 				data['item_sku'] = row['item_sku']
