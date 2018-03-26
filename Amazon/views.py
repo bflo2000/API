@@ -233,11 +233,25 @@ class amazon_variation_sftp(views.APIView):
 			except:
 				data['check_unicode'] = True
 
+			try:
+				bullet1 = row['bullet_point1']
+				if len(bullet1) > 200:
+					bullet1 = bullet1[:200]
+					data['check_bullets'] = True
+			except Exception as error:
+				error_log.write(error)
+				bullet1 = ''
+				
+			data['bullet1'] = bullet1
+			
 			# retrieve the fifth bullet, as it may be a copy of the title - and check unicode
-			bullet5 = row['bullet_point5']
-			if len(bullet5) > 200:
-				bullet5 = bullet5[:200]
-				data['check_bullets'] = True
+			try:
+				bullet5 = row['bullet_point5']
+				if len(bullet5) > 200:
+					bullet5 = bullet5[:200]
+					data['check_bullets'] = True
+			except Exception as error:
+				error_log.write(error)
 
 			try:
 				test = bullet5.encode('latin1')
@@ -260,7 +274,6 @@ class amazon_variation_sftp(views.APIView):
 			data['variation_theme'] = row['variation_theme']
 			data['product_tax_code'] = row['product_tax_code']
 			data['currency'] = row['currency']
-			data['bullet1'] = row['bullet_point1']
 			data['bullet2'] = row['bullet_point2']
 			data['bullet3'] = row['bullet_point3']
 			data['bullet4'] = row['bullet_point4']
@@ -282,6 +295,7 @@ class amazon_variation_sftp(views.APIView):
 			except Exception as error:
 				string = "Validation error in sku: " + row['item_sku'] + '\n'
 				error_log.write(string)
+				print(error)
 
 		print('Wrote ' + str(number_of_records_written) + ' records.')
 		error_log.close()
