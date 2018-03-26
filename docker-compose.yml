@@ -3,10 +3,11 @@ version: '3'
 services:
   db:
     image: postgres
-    tty: true 
   web:
     build: .
-    #command: python3 manage.py runserver 0.0.0.0:8000
+    #command: python3 manage.py makemigrations Amazon
+    #command: python3 manage.py makemigrations Images
+    #command: python3 manage.py migrate
     #command: bash
     volumes:
       - .:/code

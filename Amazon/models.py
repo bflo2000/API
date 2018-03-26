@@ -20,6 +20,7 @@ class Amazon_Variation(models.Model):
 	currency = models.CharField(max_length=16, null=True, blank=True)
 	is_parent = models.BooleanField()
 	is_orphan = models.BooleanField(default=True)
+	is_unique = models.BooleanField(default=False)
 	check_bullets = models.BooleanField(default=False)
 	check_unicode = models.BooleanField(default=False)
 	bullet1 = models.CharField(max_length=200, null=True, blank=True)
