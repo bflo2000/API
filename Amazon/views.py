@@ -295,7 +295,7 @@ class amazon_variation_sftp(views.APIView):
 			except Exception as error:
 				string = "Validation error in sku: " + row['item_sku'] + '\n'
 				error_log.write(string)
-				print(error)
+				#print(error)
 
 		print('Wrote ' + str(number_of_records_written) + ' records.')
 		error_log.close()
