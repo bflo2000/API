@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 import csv, glob, os
 from decimal import Decimal
 import datetime
+import sizer_utils
 
 class amazon_variation_list(generics.ListCreateAPIView):
 	queryset = Amazon_Variation.objects.all()
@@ -154,12 +155,12 @@ class amazon_variation_upload(views.APIView):
 		return True
 
 class amazon_variation_sftp(views.APIView):
-	
+
 	def get(self,request):
 		return Response(template_name='upload_csv_amazon.html')
 
 	def post(self, request):
-		
+
 		try:
 
 			for infile in glob.glob("ftp/Amazon/*.csv"):
@@ -218,7 +219,7 @@ class amazon_variation_sftp(views.APIView):
 			# retrieve the product description - and check unicode
 			item_name = row['item_name']
 			data['item_name'] = item_name
-			
+
 			try:
 				test = item_name.encode('latin1')
 			except:
@@ -241,9 +242,9 @@ class amazon_variation_sftp(views.APIView):
 			except Exception as error:
 				error_log.write(error)
 				bullet1 = ''
-				
+
 			data['bullet1'] = bullet1
-			
+
 			# retrieve the fifth bullet, as it may be a copy of the title - and check unicode
 			try:
 				bullet5 = row['bullet_point5']
@@ -303,9 +304,48 @@ class amazon_variation_sftp(views.APIView):
 		return True
 
 
+class amazon_variation_size_verify(views.APIView):
 
+	def get(self, request):
+		return Response(template_name='upload_csv_amazon.html')
 
+	def post(self, request):
+		skus = Amazon_Variation.objects.all().filter(item_name__contains='Vue de Saigon')
+		print (len(skus))
+		count = 0
+		for sku in skus:
+			count += 1
+			print (sku.item_sku)
 
+		print(count)
 
+	'''
+	def post(self, request):
 
-	
+		# acquire Amazon sku and its parent
+
+		#amazon_sku = Amazon_Variation.objects.get(id=1000)
+		amazon_sku = Amazon_Variation.objects.get(item_sku="4007499_3624")
+		try:
+			image_sku = Image.objects.get(sku=amazon_sku.parent_sku_id)
+		except:
+			print('didnt find')
+			pass
+
+		test = amazon_sku.item_name.encode('ascii')
+		print(test)
+		print(amazon_sku.item_name)
+		# depending on material, get the formal size
+		if(image_sku.material_type == "Photo"):
+			sizes = sizer_utils.photo_sizer(image_sku.height,image_sku.width,image_sku.sku)
+		else:
+			sizes = sizer_utils.map_sizer(image_sku.height, image_sku.width, image_sku.sku)
+
+		# we'll skip the parent amazon reference
+		if amazon_sku.size_name != "":
+
+			#compare the sizes to the present amazon sizename
+			for size in sizes:
+				if amazon_sku.size_name == size['SizeName']:
+					print('true')
+	'''
