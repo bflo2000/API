@@ -22,6 +22,69 @@ class amazon_variation_detail(generics.RetrieveUpdateDestroyAPIView):
 	serializer_class = Amazon_Variation_Serializer
 
 class amazon_variation_upload(views.APIView):
+
+	def get(self,request):
+		return Response(template_name='upload_csv_amazon.html')
+
+	def post(self, request):
+		try:
+			csv_file = request.FILES['csv_file']
+
+			if not csv_file.name.endswith('.csv'):
+				print ('File is not a CSV.')
+				return Response(template_name='failure_csv_amazon.html')
+
+			#file_data = csv_file.read().decode("utf-8")
+			#file_data = csv_file.read().encode()
+			#lines = file_data.split("\n")
+			reader = csv.DictReader(self.decode_utf8(csv_file))
+
+			if (self.consume_csv(reader)):
+				print ('is')
+			else:
+				print ('not')
+				return Response(template_name='failure_csv_amazon.html')
+
+			return Response(template_name='success_csv_amazon.html')
+
+		except Exception as error:
+			print (error)
+			return Response(template_name='failure_csv_amazon.html')
+	
+	def decode_utf8(self, input_iterator):
+		
+		for l in input_iterator:
+			yield l.decode('utf-8')
+
+	def consume_csv(self, reader):
+
+		time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+		filename = "ftp/error_log_" + time +  ".txt"
+		number_of_records_written = 0
+
+		error_log = open(filename, 'a+')
+
+		for row in reader:
+
+			try:
+				serializer = Amazon_Variation_Serializer(data=row)
+				if serializer.is_valid(raise_exception=True):
+					serializer.save()
+					number_of_records_written += 1
+				else:
+					error_log.write(serializer.errors[0])
+
+			except Exception as error:
+				string = "Validation error in sku: " + row['item_sku'] + '\n'
+				error_log.write(string)
+				#print(error)
+
+		print('Wrote ' + str(number_of_records_written) + ' records.')
+		error_log.close()
+
+		return True
+
+class category_report_upload(views.APIView):
 	renderer_classes = (TemplateHTMLRenderer,)
 
 	def get(self,request):
@@ -40,7 +103,7 @@ class amazon_variation_upload(views.APIView):
 			lines = file_data.split("\n")
 			reader = csv.DictReader(lines)
 
-			if (self.consume_csv(reader)):
+			if (self.consume_category_report(reader)):
 				print ('is')
 			else:
 				print ('not')
@@ -52,7 +115,7 @@ class amazon_variation_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 
-	def consume_csv(self, reader):
+	def consume_category_report(self, reader):
 		#try:
 
 		for row in reader:
@@ -154,7 +217,7 @@ class amazon_variation_upload(views.APIView):
 
 		return True
 
-class amazon_variation_sftp(views.APIView):
+class category_report_sftp(views.APIView):
 
 	def get(self,request):
 		return Response(template_name='upload_csv_amazon.html')
@@ -169,7 +232,7 @@ class amazon_variation_sftp(views.APIView):
 					reader = csv.DictReader(csvfile)
 					self.consume_csv(reader)
 
-			if (self.consume_csv(reader)):
+			if (self.consume_category_report(reader)):
 				print ('is')
 			else:
 				print ('not')
@@ -181,7 +244,7 @@ class amazon_variation_sftp(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 
-	def consume_csv(self, reader):
+	def consume_category_report(self, reader):
 
 		time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 		filename = "ftp/error_log_" + time +  ".txt"
@@ -302,7 +365,6 @@ class amazon_variation_sftp(views.APIView):
 		error_log.close()
 
 		return True
-
 
 class amazon_variation_size_verify(views.APIView):
 
