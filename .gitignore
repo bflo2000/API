@@ -110,11 +110,11 @@ venv.bak/
 *.txt
 
 HPAPI/settings.py
-HPAPI/Images/migrations/
-HPAPI/Amazon/migrations/
-HPAPI/Images/migrations
-HPAPI/Amazon/migrations
-HPAPI/Images/__pycache__/
-HPAPI/Amazon/__pycache__/
-HPAPI/Images/__pycache__
-HPAPI/Amazon/__pycache__
+Images/migrations/
+Amazon/migrations/
+Images/migrations
+Amazon/migrations
+Images/__pycache__/
+Amazon/__pycache__/
+Images/__pycache__
+Amazon/__pycache__
