@@ -34,9 +34,6 @@ class amazon_variation_upload(views.APIView):
 				print ('File is not a CSV.')
 				return Response(template_name='failure_csv_amazon.html')
 
-			#file_data = csv_file.read().decode("utf-8")
-			#file_data = csv_file.read().encode()
-			#lines = file_data.split("\n")
 			reader = csv.DictReader(self.decode_utf8(csv_file))
 
 			if (self.consume_csv(reader)):
@@ -51,6 +48,11 @@ class amazon_variation_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 	
+	def delete(self, request):
+		print ('delete request received')
+
+		return Response(template_name='success_csv_amazon.html')
+
 	def decode_utf8(self, input_iterator):
 		
 		for l in input_iterator:
@@ -210,10 +212,6 @@ class category_report_upload(views.APIView):
 				print('Exception', error)
 				print (row['item_sku'])
 				return False
-
-		#except Exception as error:
-		#	print('Error:', error)
-			#return False
 
 		return True
 
