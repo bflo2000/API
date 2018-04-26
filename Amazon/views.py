@@ -34,9 +34,6 @@ class amazon_variation_upload(views.APIView):
 				print ('File is not a CSV.')
 				return Response(template_name='failure_csv_amazon.html')
 
-			#file_data = csv_file.read().decode("utf-8")
-			#file_data = csv_file.read().encode()
-			#lines = file_data.split("\n")
 			reader = csv.DictReader(self.decode_utf8(csv_file))
 
 			if (self.consume_csv(reader)):
@@ -51,6 +48,11 @@ class amazon_variation_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 	
+	def delete(self, request):
+		print ('delete request received')
+
+		return Response(template_name='success_csv_amazon.html')
+
 	def decode_utf8(self, input_iterator):
 		
 		for l in input_iterator:
@@ -210,10 +212,6 @@ class category_report_upload(views.APIView):
 				print('Exception', error)
 				print (row['item_sku'])
 				return False
-
-		#except Exception as error:
-		#	print('Error:', error)
-			#return False
 
 		return True
 
@@ -381,33 +379,3 @@ class amazon_variation_size_verify(views.APIView):
 
 		print(count)
 
-	'''
-	def post(self, request):
-
-		# acquire Amazon sku and its parent
-
-		#amazon_sku = Amazon_Variation.objects.get(id=1000)
-		amazon_sku = Amazon_Variation.objects.get(item_sku="4007499_3624")
-		try:
-			image_sku = Image.objects.get(sku=amazon_sku.parent_sku_id)
-		except:
-			print('didnt find')
-			pass
-
-		test = amazon_sku.item_name.encode('ascii')
-		print(test)
-		print(amazon_sku.item_name)
-		# depending on material, get the formal size
-		if(image_sku.material_type == "Photo"):
-			sizes = sizer_utils.photo_sizer(image_sku.height,image_sku.width,image_sku.sku)
-		else:
-			sizes = sizer_utils.map_sizer(image_sku.height, image_sku.width, image_sku.sku)
-
-		# we'll skip the parent amazon reference
-		if amazon_sku.size_name != "":
-
-			#compare the sizes to the present amazon sizename
-			for size in sizes:
-				if amazon_sku.size_name == size['SizeName']:
-					print('true')
-	'''
