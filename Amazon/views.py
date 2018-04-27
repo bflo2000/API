@@ -49,8 +49,24 @@ class amazon_variation_upload(views.APIView):
 			return Response(template_name='failure_csv_amazon.html')
 	
 	def delete(self, request):
-		print ('delete request received')
+		
+		csv_file = request.FILES['csv_file']
 
+		if not csv_file.name.endswith('.csv'):
+			print ('File is not a CSV.')
+			return Response(template_name='failure_csv_amazon.html')
+
+		reader = csv.DictReader(self.decode_utf8(csv_file))
+		
+		for row in reader:
+			try:
+				item_sku = row['item_sku']
+				obj = Amazon_Variation.objects.get(item_sku=item_sku)
+				obj.delete()
+			except Error as e:
+				print (e)
+				continue	
+				
 		return Response(template_name='success_csv_amazon.html')
 
 	def decode_utf8(self, input_iterator):
@@ -79,7 +95,6 @@ class amazon_variation_upload(views.APIView):
 			except Exception as error:
 				string = "Validation error in sku: " + row['item_sku'] + '\n'
 				error_log.write(string)
-				#print(error)
 
 		print('Wrote ' + str(number_of_records_written) + ' records.')
 		error_log.close()

@@ -1,7 +1,6 @@
 from django.db import models
 
 class Image(models.Model):
-    original_image_name = models.CharField(max_length=16, null = True, unique=True)
     source_identifier = models.CharField(max_length=16, null = True, blank=True)
     sku = models.CharField(max_length=16, unique=True, primary_key=True)
     root_sku = models.CharField(max_length=16, null=True)
@@ -11,6 +10,7 @@ class Image(models.Model):
     image_width = models.IntegerField()
     short_title = models.CharField(max_length=200, null=True, blank=True)
     item_name = models.CharField(max_length=200, null=True, blank=True)
+    original_image_name = models.CharField(max_length=200, null = True, blank=True)
     date = models.CharField(max_length=32, null=True, blank=True)
     product_description = models.CharField(max_length=10000, null=True, blank=True)
     photographer = models.CharField(max_length=72,  null=True, blank=True)
