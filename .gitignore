@@ -108,6 +108,8 @@ venv.bak/
 *.xml
 *.pyc
 *.txt
+*.zip
+*.rar
 
 /HPAPI/settings.py
 /Images/migrations/
