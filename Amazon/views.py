@@ -63,7 +63,7 @@ class amazon_variation_upload(views.APIView):
 				item_sku = row['item_sku']
 				obj = Amazon_Variation.objects.get(item_sku=item_sku)
 				obj.delete()
-			except Error as e:
+			except Exception as e:
 				print (e)
 				continue	
 				

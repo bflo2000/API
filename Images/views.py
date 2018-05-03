@@ -57,10 +57,10 @@ class image_upload(views.APIView):
                     serializer.save()
                 else:
                     print (serializer.errors)
-                    return False
+                    continue
             except Exception as error:
                 print(error)
-                return False
+                continue
 
         return True
 

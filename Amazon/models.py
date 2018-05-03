@@ -7,7 +7,7 @@ class BulletPoint(models.Model):
 	bullet = models.CharField(max_length=200, unique=True)
 
 class Amazon_Variation(models.Model):
-	parent_sku = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
+	image_sku = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
 	item_sku = models.CharField(max_length = 200, unique = True)
 	item_name = models.CharField(max_length = 200)
 	product_description = models.CharField(max_length = 2000)
