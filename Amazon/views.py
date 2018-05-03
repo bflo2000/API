@@ -133,7 +133,6 @@ class category_report_upload(views.APIView):
 			return Response(template_name='failure_csv_amazon.html')
 
 	def consume_category_report(self, reader):
-		#try:
 
 		for row in reader:
 			data = {}
@@ -243,13 +242,7 @@ class category_report_sftp(views.APIView):
 
 				with open(infile, 'r') as csvfile:
 					reader = csv.DictReader(csvfile)
-					self.consume_csv(reader)
-
-			if (self.consume_category_report(reader)):
-				print ('is')
-			else:
-				print ('not')
-				return Response(template_name='failure_csv_amazon.html')
+					self.consume_category_report(reader)
 
 			return Response(template_name='success_csv_amazon.html')
 
@@ -282,10 +275,12 @@ class category_report_sftp(views.APIView):
 					parent_sku = row['parent_sku']
 
 			# if parent does not exist, ignore
+			parent_sku = parent_sku.replace("P", "")
+
 			try:
 				image = Image.objects.get(sku=parent_sku)
 				data['is_orphan'] = False
-				data['parent_sku'] = image.sku
+				data['image_sku'] = image.sku
 
 			except:
 				data['is_orphan'] = True
@@ -344,13 +339,21 @@ class category_report_sftp(views.APIView):
 			except:
 				data['check_unicode'] = True
 
-			data['asin'] = row['external_product_id']
+			try:
+				data['asin'] = row['external_product_id']
+			except:
+				data['asin'] = ""
+
+			try:
+				data['currency'] = row['currency']
+			except:
+				data['currency'] = "usd"
+
 			data['catalog_number'] = row['catalog_number']
 			data['part_number'] = row['part_number']
 			data['size_name'] = row['size_name']
 			data['variation_theme'] = row['variation_theme']
 			data['product_tax_code'] = row['product_tax_code']
-			data['currency'] = row['currency']
 			data['bullet2'] = row['bullet_point2']
 			data['bullet3'] = row['bullet_point3']
 			data['bullet4'] = row['bullet_point4']

@@ -112,5 +112,6 @@ venv.bak/
 /HPAPI/settings.py
 /Images/migrations/
 /Amazon/migrations/
-Images/__pycache__/
-Amazon/__pycache__/
+/Images/__pycache__/
+/Amazon/__pycache__/
+/ftp/
