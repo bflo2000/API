@@ -259,7 +259,6 @@ class category_report_sftp(views.APIView):
 		error_log = open(filename, 'a+')
 
 		for row in reader:
-
 			data = {}
 
 			if row['parent_child'] == 'parent':
