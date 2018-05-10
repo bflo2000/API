@@ -18,7 +18,7 @@ class image_detail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ImageSerializer
 
 class image_upload(views.APIView):
-    #parser_classes = (FileUploadParser,)
+
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self,request):
@@ -49,6 +49,7 @@ class image_upload(views.APIView):
             return Response(template_name='failure_csv.html')
 
     def put(self, request):
+
         try:
             csv_file = request.FILES['csv_file']
 
@@ -59,7 +60,7 @@ class image_upload(views.APIView):
             file_data = csv_file.read().decode("utf-8")
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
-            if (self.consume_csv(reader, True)):
+            if (consume_csv(reader, True)):
                 print ('is')
             else:
                 print ('not')
@@ -71,46 +72,54 @@ class image_upload(views.APIView):
             print (error)
             return Response(template_name='failure_csv.html')
 
-    def consume_csv(self, reader, partial):
+class images_sftp(views.APIView):
 
-        for row in reader:
-            if partial == True:
-                item_sku = row['sku']
-                image = Image.objects.get(sku=item_sku)
+    def get(self,request):
+        return Response(template_name='upload_csv_amazon.html')
 
-                try:
-                    serializer = ImageSerializer(image, data=row, partial=True)
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        print (item_sku + ": " + serializer.errors)
-                        continue
-                except Exception as error:
-                    print(error)
+    def post(self, request):
+
+        try:
+
+            for infile in glob.glob("ftp/Images/*.csv"):
+
+                with open(infile, 'r') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    consume_csv(reader)
+
+            return Response(template_name='success_csv_amazon.html')
+
+        except Exception as error:
+            print (error)
+            return Response(template_name='failure_csv_amazon.html')
+
+def consume_csv(reader, partial):
+
+    for row in reader:
+        if partial == True:
+            item_sku = row['sku']
+            image = Image.objects.get(sku=item_sku)
+
+            try:
+                serializer = ImageSerializer(image, data=row, partial=True)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    print (item_sku + ": " + serializer.errors)
                     continue
-            else:
-                try:
-                    serializer = ImageSerializer(data=row)
-                    if serializer.is_valid():
-                        serializer.save()
-                    else:
-                        print (serializer.errors)
-                        continue
-                except Exception as error:
-                    print(error)
+            except Exception as error:
+                print(error)
+                continue
+        else:
+            try:
+                serializer = ImageSerializer(data=row)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    print (serializer.errors)
                     continue
+            except Exception as error:
+                print(error)
+                continue
 
-        return True
-
-    def validate_fields(self, row):
-        return True
-
-    def verify_keys(self, reader):
-        keys = reader.fieldnames
-        schema = ['sku', 'name', 'height', 'width', 'description', 'url', 'path',
-            'category', 'collection', 'sub_collection']
-
-        if keys != schema:
-            return False
-
-        return True
+    return True

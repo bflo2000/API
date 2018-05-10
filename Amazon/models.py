@@ -7,7 +7,7 @@ class BulletPoint(models.Model):
 	bullet = models.CharField(max_length=200, unique=True)
 
 class Amazon_Variation(models.Model):
-	image_sku = models.ForeignKey(Image, on_delete=models.CASCADE, null=True)
+	image_sku = models.ForeignKey(Image, null=True, blank = True)
 	item_sku = models.CharField(max_length = 200, unique = True)
 	item_name = models.CharField(max_length = 200)
 	product_description = models.CharField(max_length = 2000)
@@ -19,7 +19,6 @@ class Amazon_Variation(models.Model):
 	product_tax_code = models.CharField(max_length=200, null=True, blank=True)
 	currency = models.CharField(max_length=16, null=True, blank=True)
 	is_parent = models.BooleanField()
-	is_orphan = models.BooleanField(default=True)
 	is_unique = models.BooleanField(default=False)
 	is_dirty = models.BooleanField(default=False)
 	check_bullets = models.BooleanField(default=False)
