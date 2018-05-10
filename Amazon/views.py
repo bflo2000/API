@@ -115,7 +115,6 @@ class category_report_upload(views.APIView):
 				print ('File is not a CSV.')
 				return Response(template_name='failure_csv_amazon.html')
 
-			#file_data = csv_file.read().decode("utf-8")
 			file_data = csv_file.read()
 			lines = file_data.split("\n")
 			reader = csv.DictReader(lines)
@@ -219,8 +218,6 @@ class category_report_upload(views.APIView):
 				else:
 					print ('Amazon Serializer:', serializer.errors)
 					print (data['item_sku'])
-					#return False
-					#pass
 
 			except UnicodeDecodeError as error:
 				print('Exception', error)

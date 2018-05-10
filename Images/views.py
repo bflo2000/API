@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.reverse import reverse
-import csv
+import csv, glob
 
 class image_list(generics.ListCreateAPIView):
     queryset = Image.objects.all()
@@ -85,7 +85,23 @@ class images_sftp(views.APIView):
 
                 with open(infile, 'r') as csvfile:
                     reader = csv.DictReader(csvfile)
-                    consume_csv(reader)
+                    consume_csv(reader, False)
+
+            return Response(template_name='success_csv_amazon.html')
+
+        except Exception as error:
+            print (error)
+            return Response(template_name='failure_csv_amazon.html')
+
+    def put(self, request):
+
+        try:
+
+            for infile in glob.glob("ftp/Images/*.csv"):
+
+                with open(infile, 'r') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    consume_csv(reader, True)
 
             return Response(template_name='success_csv_amazon.html')
 
@@ -95,10 +111,18 @@ class images_sftp(views.APIView):
 
 def consume_csv(reader, partial):
 
+    filename = "ftp/error_log_" + time +  ".txt"
+    error_log = open(filename, 'a+')
+        
     for row in reader:
         if partial == True:
             item_sku = row['sku']
-            image = Image.objects.get(sku=item_sku)
+
+            try:
+                image = Image.objects.get(sku=item_sku)
+            except Exception as error:
+                print("Couldn't find Sku: " + item_sku)
+                continue
 
             try:
                 serializer = ImageSerializer(image, data=row, partial=True)
@@ -108,7 +132,7 @@ def consume_csv(reader, partial):
                     print (item_sku + ": " + serializer.errors)
                     continue
             except Exception as error:
-                print(error)
+                print(item_sku + " " + error)
                 continue
         else:
             try:
@@ -119,7 +143,7 @@ def consume_csv(reader, partial):
                     print (serializer.errors)
                     continue
             except Exception as error:
-                print(error)
+                print(item_sku + " " + error)
                 continue
 
     return True
