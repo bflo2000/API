@@ -7,5 +7,4 @@ urlpatterns = [
     url(r'amazon/upload_category_report', views.category_report_upload.as_view()),
     url(r'amazon/upload_variations', views.amazon_variation_upload.as_view()),
     url(r'amazon/sftp', views.category_report_sftp.as_view()),
-    url(r'amazon/size_verify', views.amazon_variation_size_verify.as_view()),
 ]

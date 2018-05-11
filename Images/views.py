@@ -132,6 +132,7 @@ def consume_csv(reader, partial):
                 if serializer.is_valid():
                     serializer.save()
                 else:
+                    print('Error in Sku: ' + item_sku)
                     error_string = item_sku + ": " + serializer.errors
                     print (error_string)
                     error_log.write(error_string)
