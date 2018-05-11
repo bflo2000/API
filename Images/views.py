@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.reverse import reverse
-import csv, glob
+import csv, glob, datetime
 
 class image_list(generics.ListCreateAPIView):
     queryset = Image.objects.all()
@@ -111,7 +111,8 @@ class images_sftp(views.APIView):
 
 def consume_csv(reader, partial):
 
-    filename = "ftp/error_log_" + time +  ".txt"
+    time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+    filename = "ftp/Images_error_log_" + time +  ".txt"
     error_log = open(filename, 'a+')
         
     for row in reader:
@@ -121,7 +122,9 @@ def consume_csv(reader, partial):
             try:
                 image = Image.objects.get(sku=item_sku)
             except Exception as error:
-                print("Couldn't find Sku: " + item_sku)
+                error_string = "Couldn't find Sku: " + item_sku
+                print (error_string)
+                error_log.write(error_string)
                 continue
 
             try:
@@ -129,10 +132,14 @@ def consume_csv(reader, partial):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    print (item_sku + ": " + serializer.errors)
+                    error_string = item_sku + ": " + serializer.errors
+                    print (error_string)
+                    error_log.write(error_string)
                     continue
             except Exception as error:
-                print(item_sku + " " + error)
+                error_string = item_sku + " " + error
+                print (error_string)
+                error_log.write(error_string)
                 continue
         else:
             try:
@@ -140,10 +147,14 @@ def consume_csv(reader, partial):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    print (serializer.errors)
+                    error_string = item_sku + ": " + serializer.errors
+                    print (error_string)
+                    error_log.write(error_string)
                     continue
             except Exception as error:
-                print(item_sku + " " + error)
-                continue
+                    error_string = item_sku + " " + error
+                    print (error_string)
+                    error_log.write(error_string)
+                    continue
 
     return True

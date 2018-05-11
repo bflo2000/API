@@ -115,11 +115,12 @@ class category_report_upload(views.APIView):
 				print ('File is not a CSV.')
 				return Response(template_name='failure_csv_amazon.html')
 
-			file_data = csv_file.read()
+			file_data = csv_file.read().decode("utf-8")
+			#file_data = csv_file.read()
 			lines = file_data.split("\n")
 			reader = csv.DictReader(lines)
 
-			if (self.consume_category_report(reader)):
+			if (consume_category_report(reader)):
 				print ('is')
 			else:
 				print ('not')
@@ -130,101 +131,7 @@ class category_report_upload(views.APIView):
 		except Exception as error:
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
-
-	def consume_category_report(self, reader):
-
-		for row in reader:
-			data = {}
-
-			if row['parent_child'] == 'parent':
-				data['is_parent'] = True
-				parent_sku = row['item_sku']
-			else:
-				data['is_parent'] = False
-				parent_sku = row['parent_sku']
-
-			# if parent does not exist, ignore
-			try:
-				image = Image.objects.get(sku=parent_sku)
-				data['is_orphan'] = False
-				data['parent_sku'] = image.sku
-
-			except:
-				data['is_orphan'] = True
-
-			data['item_sku'] = row['item_sku']
-
-			# retrieve the product description - and check unicode
-			data['item_name'] = row['item_name']
-
-			try:
-				test = (unicode(data['item_name']))
-			except:
-				data['item_name'] = row['item_name'].decode('utf-8')
-				data['check_unicode'] = True
-
-			# retrieve the product description - and check unicode
-			data['product_description'] = row['product_description']
-
-			try:
-				test = (unicode(data['product_description']))
-			except:
-				data['product_description'] = row['product_description'].decode('utf-8')
-				data['check_unicode'] = True
-
-			# retrieve the fifth bullet, as it may be a copy of the title - and check unicode
-			bullet5 = row['bullet_point5']
-			if len(bullet5) > 200:
-				bullet5 = bullet5[:200]
-				data['check_bullets'] = True
-
-			try:
-				test = (unicode(bullet5))
-			except:
-				data['bullet5'] = bullet5.decode('utf-8')
-				data['check_unicode'] = True
-
-			# retrieve keywords, check unicode
-			data['keywords'] = row['generic_keywords1']
-
-			try:
-				test = (unicode(data['keywords']))
-			except:
-				data['keywords'] = row['generic_keywords1'].decode('utf-8')
-				data['check_unicode'] = True
-
-			data['asin'] = row['external_product_id']
-			data['catalog_number'] = row['catalog_number']
-			data['part_number'] = row['part_number']
-			data['size_name'] = row['size_name']
-			data['variation_theme'] = row['variation_theme']
-			data['product_tax_code'] = row['product_tax_code']
-			data['currency'] = row['currency']
-			data['bullet1'] = row['bullet_point1']
-			data['bullet2'] = row['bullet_point2']
-			data['bullet3'] = row['bullet_point3']
-			data['bullet4'] = row['bullet_point4']
-
-			# set default price to 0.00 if empty
-			if row['standard_price'] == "":
-				data['price'] = '0.00'
-			else:
-				data['price'] = row['standard_price']
-
-			try:
-				serializer = Amazon_Variation_Serializer(data=data)
-				if serializer.is_valid():
-					serializer.save()
-				else:
-					print ('Amazon Serializer:', serializer.errors)
-					print (data['item_sku'])
-
-			except UnicodeDecodeError as error:
-				print('Exception', error)
-				print (row['item_sku'])
-				return False
-
-		return True
+	
 
 class category_report_sftp(views.APIView):
 
@@ -239,7 +146,7 @@ class category_report_sftp(views.APIView):
 
 				with open(infile, 'r') as csvfile:
 					reader = csv.DictReader(csvfile)
-					self.consume_category_report(reader)
+					consume_category_report(reader)
 
 			return Response(template_name='success_csv_amazon.html')
 
@@ -247,149 +154,137 @@ class category_report_sftp(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 
-	def consume_category_report(self, reader):
+def consume_category_report(reader):
 
-		time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-		filename = "ftp/error_log_" + time +  ".txt"
-		number_of_records_written = 0
+	time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+	filename = "ftp/amazon_error_log_" + time +  ".txt"
+	number_of_records_written = 0
 
-		error_log = open(filename, 'a+')
+	error_log = open(filename, 'a+')
 
-		for row in reader:
-			data = {}
+	for row in reader:
 
-			if row['parent_child'] == 'parent':
+		data = {}
+
+		if row['parent_child'] == 'parent':
+			data['is_parent'] = True
+			parent_sku = row['item_sku']
+		else:
+			if row['parent_sku'] == "":
 				data['is_parent'] = True
 				parent_sku = row['item_sku']
+				data['is_unique'] = True
 			else:
-				if row['parent_sku'] == "":
-					data['is_parent'] = True
-					parent_sku = row['item_sku']
-					data['is_unique'] = True
-				else:
-					data['is_parent'] = False
-					parent_sku = row['parent_sku']
+				data['is_parent'] = False
+				parent_sku = row['parent_sku']
 
-			# if parent does not exist, ignore
-			parent_sku = parent_sku.replace("P", "")
+		# if parent does not exist, ignore
+		parent_sku = parent_sku.replace("P", "")
 
-			try:
-				image = Image.objects.get(sku=parent_sku)
-				data['is_orphan'] = False
-				data['image_sku'] = image.sku
+		try:
+			image = Image.objects.get(sku=parent_sku)
+			data['is_orphan'] = False
+			data['image_sku'] = image.sku
 
-			except:
-				data['is_orphan'] = True
+		except:
+			data['is_orphan'] = True
+			image = ""
+		data['item_sku'] = row['item_sku']
 
-			data['item_sku'] = row['item_sku']
+		# retrieve the product description - and check unicode
+		item_name = row['item_name']
+		data['item_name'] = item_name
 
-			# retrieve the product description - and check unicode
-			item_name = row['item_name']
-			data['item_name'] = item_name
+		try:
+			test = item_name.encode('latin1')
+		except:
+			data['check_unicode'] = True
 
-			try:
-				test = item_name.encode('latin1')
-			except:
-				data['check_unicode'] = True
+		# retrieve the product description - and check unicode
+		product_description = row['product_description']
+		data['product_description'] = product_description
 
-			# retrieve the product description - and check unicode
-			product_description = row['product_description']
-			data['product_description'] = product_description
+		try:
+			test = product_description.encode('latin1')
+		except:
+			data['check_unicode'] = True
 
-			try:
-				test = product_description.encode('latin1')
-			except:
-				data['check_unicode'] = True
+		try:
+			bullet1 = row['bullet_point1']
+			if len(bullet1) > 200:
+				bullet1 = bullet1[:200]
+				data['check_bullets'] = True
+		except Exception as error:
+			error_log.write(error)
+			bullet1 = ''
 
-			try:
-				bullet1 = row['bullet_point1']
-				if len(bullet1) > 200:
-					bullet1 = bullet1[:200]
-					data['check_bullets'] = True
-			except Exception as error:
-				error_log.write(error)
-				bullet1 = ''
+		data['bullet1'] = bullet1
 
-			data['bullet1'] = bullet1
+		# retrieve the fifth bullet, as it may be a copy of the title - and check unicode
+		try:
+			bullet5 = row['bullet_point5']
+			if len(bullet5) > 200:
+				bullet5 = bullet5[:200]
+				data['check_bullets'] = True
+		except Exception as error:
+			error_log.write(error)
 
-			# retrieve the fifth bullet, as it may be a copy of the title - and check unicode
-			try:
-				bullet5 = row['bullet_point5']
-				if len(bullet5) > 200:
-					bullet5 = bullet5[:200]
-					data['check_bullets'] = True
-			except Exception as error:
-				error_log.write(error)
+		try:
+			test = bullet5.encode('latin1')
+		except:
+			data['check_unicode'] = True
 
-			try:
-				test = bullet5.encode('latin1')
-			except:
-				data['check_unicode'] = True
+		# retrieve keywords, check unicode
+		keywords = row['generic_keywords1']
+		data['keywords'] = keywords
 
-			# retrieve keywords, check unicode
-			keywords = row['generic_keywords1']
-			data['keywords'] = keywords
+		try:
+			test = keywords.encode('latin1')
+		except:
+			data['check_unicode'] = True
 
-			try:
-				test = keywords.encode('latin1')
-			except:
-				data['check_unicode'] = True
+		try:
+			data['asin'] = row['external_product_id']
+		except:
+			data['asin'] = ""
 
-			try:
-				data['asin'] = row['external_product_id']
-			except:
-				data['asin'] = ""
+		try:
+			data['currency'] = row['currency']
+		except:
+			data['currency'] = "usd"
 
-			try:
-				data['currency'] = row['currency']
-			except:
-				data['currency'] = "usd"
+		data['catalog_number'] = row['catalog_number']
+		data['part_number'] = row['part_number']
+		data['size_name'] = row['size_name']
+		data['variation_theme'] = row['variation_theme']
+		data['product_tax_code'] = row['product_tax_code']
+		data['bullet2'] = row['bullet_point2']
+		data['bullet3'] = row['bullet_point3']
+		data['bullet4'] = row['bullet_point4']
 
-			data['catalog_number'] = row['catalog_number']
-			data['part_number'] = row['part_number']
-			data['size_name'] = row['size_name']
-			data['variation_theme'] = row['variation_theme']
-			data['product_tax_code'] = row['product_tax_code']
-			data['bullet2'] = row['bullet_point2']
-			data['bullet3'] = row['bullet_point3']
-			data['bullet4'] = row['bullet_point4']
+		# set default price to 0.00 if empty
+		if row['standard_price'] == "":
+			data['price'] = '0.00'
+		else:
+			data['price'] = row['standard_price']
 
-			# set default price to 0.00 if empty
-			if row['standard_price'] == "":
-				data['price'] = '0.00'
+		print (image)
+
+		try:
+			serializer = Amazon_Variation_Serializer(data=data)
+			if serializer.is_valid(raise_exception=True):
+				serializer.save()
+				number_of_records_written += 1
 			else:
-				data['price'] = row['standard_price']
+				error_log.write(serializer.errors[0])
 
-			try:
-				serializer = Amazon_Variation_Serializer(data=data)
-				if serializer.is_valid(raise_exception=True):
-					serializer.save()
-					number_of_records_written += 1
-				else:
-					error_log.write(serializer.errors[0])
+		except Exception as error:
+			string = "Validation error in sku: " + row['item_sku'] + '\n'
+			error_log.write(string)
 
-			except Exception as error:
-				string = "Validation error in sku: " + row['item_sku'] + '\n'
-				error_log.write(string)
-				#print(error)
+	print('Wrote ' + str(number_of_records_written) + ' records.')
+	error_log.close()
 
-		print('Wrote ' + str(number_of_records_written) + ' records.')
-		error_log.close()
+	return True
 
-		return True
-
-class amazon_variation_size_verify(views.APIView):
-
-	def get(self, request):
-		return Response(template_name='upload_csv_amazon.html')
-
-	def post(self, request):
-		skus = Amazon_Variation.objects.all().filter(item_name__contains='Vue de Saigon')
-		print (len(skus))
-		count = 0
-		for sku in skus:
-			count += 1
-			print (sku.item_sku)
-
-		print(count)
 
