@@ -116,8 +116,14 @@ def consume_csv(reader, partial):
     error_log = open(filename, 'a+')
         
     for row in reader:
+        #print (row)
+        try:
+            item_sku = row['sku'].decode('utf8').encode('utf16')
+        except Exception as e:
+            print ("Exception")
+
+        print (item_sku)
         if partial == True:
-            item_sku = row['sku']
 
             try:
                 image = Image.objects.get(sku=item_sku)
@@ -148,10 +154,15 @@ def consume_csv(reader, partial):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    error_string = item_sku + ": " + serializer.errors
+                    error_string = item_sku + " "
+
+                    for key, value in serializer.errors.items():
+                        error_string = error_string + key + ": " + value[0]
+                    
                     print (error_string)
                     error_log.write(error_string)
                     continue
+
             except Exception as error:
                     error_string = item_sku + " " + error
                     print (error_string)
