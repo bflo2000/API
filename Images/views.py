@@ -118,8 +118,7 @@ def consume_csv(reader, partial):
     error_log = open(filename, 'a+')
         
     for row in reader:
-        for key, value in row.items():
-            print (key, value)
+
         try:
             item_sku = row["sku"]
         except Exception as e:
