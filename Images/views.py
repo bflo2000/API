@@ -102,7 +102,7 @@ class images_sftp(views.APIView):
             for infile in glob.glob("ftp/Images/*.csv"):
 
                 with open(infile, 'r') as csvfile:
-                    reader = csv.DictReader(csvfile, delimiter='\t')
+                    reader = csv.DictReader(csvfile)
                     consume_csv(reader, True)
 
             return Response(template_name='success_csv_amazon.html')
@@ -118,11 +118,10 @@ def consume_csv(reader, partial):
     error_log = open(filename, 'a+')
         
     for row in reader:
-
         try:
-            item_sku = row["sku"]
+            item_sku = row['sku']
         except Exception as e:
-            print('Exception', e)
+            print('Exception', e, row)
 
         if partial == True:
 
