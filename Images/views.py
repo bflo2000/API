@@ -22,9 +22,11 @@ class image_upload(views.APIView):
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self,request):
-        return Response(template_name='upload_csv.html')
-
+        image = Image.objects.get(sku='5086043P')
+        return Response({'sku': image.sku}, template_name='upload_csv.html')
+           
     def post(self, request):
+
         try:
             csv_file = request.FILES['csv_file']
 
@@ -36,7 +38,7 @@ class image_upload(views.APIView):
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
 
-            if (self.consume_csv(reader, False)):
+            if (consume_csv(reader, False)):
                 print ('is')
             else:
                 print ('not')
@@ -57,7 +59,7 @@ class image_upload(views.APIView):
                 print ('File is not a CSV.')
                 return Response(template_name='failure_csv.html')
 
-            file_data = csv_file.read().decode("utf-8")
+            file_data = csv_file.read()
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
             if (consume_csv(reader, True)):
@@ -100,7 +102,7 @@ class images_sftp(views.APIView):
             for infile in glob.glob("ftp/Images/*.csv"):
 
                 with open(infile, 'r') as csvfile:
-                    reader = csv.DictReader(csvfile)
+                    reader = csv.DictReader(csvfile, delimiter='\t')
                     consume_csv(reader, True)
 
             return Response(template_name='success_csv_amazon.html')
@@ -116,20 +118,19 @@ def consume_csv(reader, partial):
     error_log = open(filename, 'a+')
         
     for row in reader:
-        #print (row)
+        for key, value in row.items():
+            print (key, value)
         try:
-            item_sku = row['sku'].decode('utf8').encode('utf16')
+            item_sku = row["sku"]
         except Exception as e:
-            print ("Exception")
+            print('Exception', e)
 
-        print (item_sku)
         if partial == True:
 
             try:
                 image = Image.objects.get(sku=item_sku)
             except Exception as error:
                 error_string = "Couldn't find Sku: " + item_sku
-                print (error_string)
                 error_log.write(error_string)
                 continue
 
@@ -138,14 +139,16 @@ def consume_csv(reader, partial):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    print('Error in Sku: ' + item_sku)
-                    error_string = item_sku + ": " + serializer.errors
-                    print (error_string)
+                    error_string = item_sku + " "
+
+                    for key, value in serializer.errors.items():
+                        error_string = error_string + key + ": " + value[0]
+
                     error_log.write(error_string)
                     continue
+
             except Exception as error:
                 error_string = item_sku + " " + error
-                print (error_string)
                 error_log.write(error_string)
                 continue
         else:
@@ -159,13 +162,11 @@ def consume_csv(reader, partial):
                     for key, value in serializer.errors.items():
                         error_string = error_string + key + ": " + value[0]
                     
-                    print (error_string)
                     error_log.write(error_string)
                     continue
 
             except Exception as error:
                     error_string = item_sku + " " + error
-                    print (error_string)
                     error_log.write(error_string)
                     continue
 
