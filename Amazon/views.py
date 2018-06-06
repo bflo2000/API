@@ -36,7 +36,7 @@ class amazon_variation_upload(views.APIView):
 
 			reader = csv.DictReader(self.decode_utf8(csv_file))
 
-			if (self.consume_csv(reader)):
+			if (self.consume_csv(reader, False)):
 				print ('is')
 			else:
 				print ('not')
@@ -48,6 +48,28 @@ class amazon_variation_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 	
+	def put(self, request):
+		try:
+			csv_file = request.FILES['csv_file']
+
+			if not csv_file.name.endswith('.csv'):
+				print ('File is not a CSV.')
+				return Response(template_name='failure_csv_amazon.html')
+
+			reader = csv.DictReader(self.decode_utf8(csv_file))
+
+			if (self.consume_csv(reader, True)):
+				print ('is')
+			else:
+				print ('not')
+				return Response(template_name='failure_csv_amazon.html')
+
+			return Response(template_name='success_csv_amazon.html')
+
+		except Exception as error:
+			print (error)
+			return Response(template_name='failure_csv_amazon.html')
+
 	def delete(self, request):
 		
 		csv_file = request.FILES['csv_file']
@@ -101,6 +123,112 @@ class amazon_variation_upload(views.APIView):
 
 		return True
 
+class amazon_variation_sftp(views.APIView):
+
+	def post(self, request):
+        try:
+
+            for infile in glob.glob("ftp/Amazon/*.csv"):
+
+                with open(infile, 'r') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    consume_csv(reader, False)
+
+            return Response(template_name='success_csv_amazon.html')
+
+        except Exception as error:
+            print (error)
+            return Response(template_name='failure_csv_amazon.html')
+	
+	def put(self, request):
+        try:
+
+            for infile in glob.glob("ftp/Amazon/*.csv"):
+
+                with open(infile, 'r') as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    consume_csv(reader, True)
+
+            return Response(template_name='success_csv_amazon.html')
+
+        except Exception as error:
+            print (error)
+            return Response(template_name='failure_csv_amazon.html')
+
+	def delete(self, request):
+		
+		csv_file = request.FILES['csv_file']
+
+		if not csv_file.name.endswith('.csv'):
+			print ('File is not a CSV.')
+			return Response(template_name='failure_csv_amazon.html')
+
+		reader = csv.DictReader(self.decode_utf8(csv_file))
+		
+		for row in reader:
+			try:
+				item_sku = row['item_sku']
+				obj = Amazon_Variation.objects.get(item_sku=item_sku)
+				obj.delete()
+			except Exception as e:
+				print (e)
+				continue	
+				
+		return Response(template_name='success_csv_amazon.html')
+
+
+def consume_csv(self, reader, partial):
+
+	time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
+	filename = "ftp/error_log_" + time +  ".txt"
+	number_of_records_written = 0
+
+	error_log = open(filename, 'a+')
+
+	for row in reader:
+		if partial == True:
+			try:
+	        	variation = Amazon_Variation.objects.get(sku=item_sku)
+	    	except Exception as error:
+	        	error_string = "Couldn't find Sku: " + item_sku
+	        	error_log.write(error_string)
+	        	continue
+	        try:
+	            serializer = Amazon_Variation_Serializer(variation, data=row, partial=True)
+	            if serializer.is_valid():
+	                serializer.save()
+	            else:
+	                error_string = item_sku + " "
+
+	                for key, value in serializer.errors.items():
+	                    error_string = error_string + key + ": " + value[0]
+
+	                error_log.write(error_string)
+	                continue
+
+	            except Exception as error:
+	                error_string = item_sku + " " + error
+	                error_log.write(error_string)
+	                continue                
+	    else:
+			try:
+				serializer = Amazon_Variation_Serializer(data=row)
+
+				if serializer.is_valid(raise_exception=True):
+					serializer.save()
+					number_of_records_written += 1
+				else:
+					error_log.write(serializer.errors[0])
+
+			except Exception as error:
+				string = "Validation error in sku: " + row['item_sku'] + '\n'
+				error_log.write(string)
+
+	print('Wrote ' + str(number_of_records_written) + ' records.')
+	error_log.close()
+
+	return True
+
 class category_report_upload(views.APIView):
 	renderer_classes = (TemplateHTMLRenderer,)
 
@@ -132,7 +260,6 @@ class category_report_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 	
-
 class category_report_sftp(views.APIView):
 
 	def get(self,request):
