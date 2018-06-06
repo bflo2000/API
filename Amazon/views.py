@@ -126,34 +126,33 @@ class amazon_variation_upload(views.APIView):
 class amazon_variation_sftp(views.APIView):
 
 	def post(self, request):
-        try:
+		try:
+			for infile in glob.glob("ftp/Amazon/*.csv"):
 
-            for infile in glob.glob("ftp/Amazon/*.csv"):
+				with open(infile, 'r') as csvfile:
+					reader = csv.DictReader(csvfile)
+					consume_csv(reader, False)
 
-                with open(infile, 'r') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    consume_csv(reader, False)
+			return Response(template_name='success_csv_amazon.html')
 
-            return Response(template_name='success_csv_amazon.html')
-
-        except Exception as error:
-            print (error)
-            return Response(template_name='failure_csv_amazon.html')
+		except Exception as error:
+			print (error)
+			return Response(template_name='failure_csv_amazon.html')
 	
 	def put(self, request):
-        try:
+		try:
 
-            for infile in glob.glob("ftp/Amazon/*.csv"):
+			for infile in glob.glob("ftp/Amazon/*.csv"):
 
-                with open(infile, 'r') as csvfile:
-                    reader = csv.DictReader(csvfile)
-                    consume_csv(reader, True)
+				with open(infile, 'r') as csvfile:
+					reader = csv.DictReader(csvfile)
+					consume_csv(reader, True)
 
-            return Response(template_name='success_csv_amazon.html')
+			return Response(template_name='success_csv_amazon.html')
 
-        except Exception as error:
-            print (error)
-            return Response(template_name='failure_csv_amazon.html')
+		except Exception as error:
+			print (error)
+			return Response(template_name='failure_csv_amazon.html')
 
 	def delete(self, request):
 		
@@ -188,29 +187,29 @@ def consume_csv(self, reader, partial):
 	for row in reader:
 		if partial == True:
 			try:
-	        	variation = Amazon_Variation.objects.get(sku=item_sku)
-	    	except Exception as error:
-	        	error_string = "Couldn't find Sku: " + item_sku
-	        	error_log.write(error_string)
-	        	continue
-	        try:
-	            serializer = Amazon_Variation_Serializer(variation, data=row, partial=True)
-	            if serializer.is_valid():
-	                serializer.save()
-	            else:
-	                error_string = item_sku + " "
+				variation = Amazon_Variation.objects.get(sku=item_sku)
+			except Exception as error:
+				error_string = "Couldn't find Sku: " + item_sku
+				error_log.write(error_string)
+				continue
+			try:
+				serializer = Amazon_Variation_Serializer(variation, data=row, partial=True)
+				if serializer.is_valid():
+					serializer.save()
+				else:
+					error_string = item_sku + " "
 
-	                for key, value in serializer.errors.items():
-	                    error_string = error_string + key + ": " + value[0]
+					for key, value in serializer.errors.items():
+						error_string = error_string + key + ": " + value[0]
 
-	                error_log.write(error_string)
-	                continue
+					error_log.write(error_string)
+					continue
 
-	            except Exception as error:
-	                error_string = item_sku + " " + error
-	                error_log.write(error_string)
-	                continue                
-	    else:
+			except Exception as error:
+				error_string = item_sku + " " + error
+				error_log.write(error_string)
+				continue                
+		else:
 			try:
 				serializer = Amazon_Variation_Serializer(data=row)
 
