@@ -97,7 +97,6 @@ class amazon_variation_sftp(views.APIView):
 
 				with open(infile, 'r') as csvfile:
 					reader = csv.DictReader(csvfile)
-					print('hello')
 					consume_csv(reader, True)
 
 			return Response(template_name='success_csv_amazon.html')
@@ -144,7 +143,7 @@ def consume_csv(reader, partial):
 
 		if partial == True:
 			try:
-				variation = Amazon_Variation.objects.get(sku=item_sku)
+				variation = Amazon_Variation.objects.get(item_sku=item_sku)
 			except Exception as error:
 				error_string = "Couldn't find Sku: " + item_sku
 				error_log.write(error_string)
