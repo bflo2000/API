@@ -97,6 +97,7 @@ class amazon_variation_sftp(views.APIView):
 
 				with open(infile, 'r') as csvfile:
 					reader = csv.DictReader(csvfile)
+					print('hello')
 					consume_csv(reader, True)
 
 			return Response(template_name='success_csv_amazon.html')
@@ -127,8 +128,7 @@ class amazon_variation_sftp(views.APIView):
 		return Response(template_name='success_csv_amazon.html')
 
 
-def consume_csv(self, reader, partial):
-
+def consume_csv(reader, partial):
 	time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
 	filename = "ftp/error_log_" + time +  ".txt"
 	number_of_records_written = 0
@@ -136,6 +136,12 @@ def consume_csv(self, reader, partial):
 	error_log = open(filename, 'a+')
 
 	for row in reader:
+
+		try:
+			item_sku = row['item_sku']
+		except Exception as e:
+			print('Exception', e, row)
+
 		if partial == True:
 			try:
 				variation = Amazon_Variation.objects.get(sku=item_sku)
