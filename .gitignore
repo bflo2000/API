@@ -107,9 +107,19 @@ venv.bak/
 *.xlsx
 *.xml
 *.pyc
-*.txt
 *.zip
 *.rar
+
+# Node and Webpack files
+node_modules
+npm-debug.log
+webpack-stats*
+
+# Static assests
+staticfiles
+static_cdn
+media_cdn
+__pycache__
 
 /HPAPI/settings.py
 /Images/migrations/

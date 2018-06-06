@@ -5,10 +5,6 @@ services:
     image: postgres
   web:
     build: .
-    #command: python3 manage.py makemigrations Amazon
-    #command: python3 manage.py makemigrations Images
-    #command: python3 manage.py migrate
-    #command: bash
     volumes:
       - .:/code
     ports:
