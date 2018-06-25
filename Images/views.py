@@ -22,8 +22,7 @@ class image_upload(views.APIView):
     renderer_classes = (TemplateHTMLRenderer,)
 
     def get(self,request):
-        image = Image.objects.get(sku='5086043P')
-        return Response({'sku': image.sku}, template_name='upload_csv.html')
+        return Response(template_name='upload_csv.html')
            
     def post(self, request):
 

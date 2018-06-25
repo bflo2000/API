@@ -12,6 +12,7 @@ import csv, glob, os
 from decimal import Decimal
 import datetime
 import sizer_utils
+from django.db import IntegrityError
 
 class amazon_variation_list(generics.ListCreateAPIView):
 	queryset = Amazon_Variation.objects.all()
@@ -60,7 +61,7 @@ class amazon_variation_upload(views.APIView):
 		
 		for row in reader:
 			try:
-				item_sku = row['item_sku']
+				item_sku = row['item_sku_delete']
 				obj = Amazon_Variation.objects.get(item_sku=item_sku)
 				obj.delete()
 			except Exception as e:
@@ -112,12 +113,10 @@ class amazon_variation_sftp(views.APIView):
 		if not csv_file.name.endswith('.csv'):
 			print ('File is not a CSV.')
 			return Response(template_name='failure_csv_amazon.html')
-
-		reader = csv.DictReader(self.decode_utf8(csv_file))
-		
+		reader = csv.DictReader(decode_utf8(csv_file))
 		for row in reader:
 			try:
-				item_sku = row['item_sku']
+				item_sku = row['item_sku_delete']
 				obj = Amazon_Variation.objects.get(item_sku=item_sku)
 				obj.delete()
 			except Exception as e:
@@ -247,7 +246,9 @@ def consume_category_report(reader):
 	for row in reader:
 
 		data = {}
-
+		#print(row)
+		#print(row['item_sku'])
+		#exit()
 		if row['parent_child'] == 'parent':
 			data['is_parent'] = True
 			parent_sku = row['item_sku']
@@ -350,8 +351,6 @@ def consume_category_report(reader):
 		else:
 			data['price'] = row['standard_price']
 
-		print (image)
-
 		try:
 			serializer = Amazon_Variation_Serializer(data=data)
 			if serializer.is_valid(raise_exception=True):
@@ -359,14 +358,19 @@ def consume_category_report(reader):
 				number_of_records_written += 1
 			else:
 				error_log.write(serializer.errors[0])
-
+		except IntegrityError as e:
+			print(e)
 		except Exception as error:
 			string = "Validation error in sku: " + row['item_sku'] + '\n'
 			error_log.write(string)
-
+			#print(string)
+			#print(error.detail)
 	print('Wrote ' + str(number_of_records_written) + ' records.')
 	error_log.close()
 
 	return True
 
-
+def decode_utf8(input_iterator):
+		
+    for l in input_iterator:
+        yield l.decode('utf-8')

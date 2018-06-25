@@ -114,6 +114,7 @@ venv.bak/
 node_modules
 npm-debug.log
 webpack-stats*
+bundles
 
 # Static assests
 staticfiles

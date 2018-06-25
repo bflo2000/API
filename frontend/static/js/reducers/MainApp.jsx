@@ -1,24 +1,19 @@
-/*
-import {
-  ADD_TODO,
-  TOGGLE_TODO,
-  SET_VISIBILITY_FILTER,
-  VisibilityFilters
-} from './actions'
-​*/
+const initialState = {}
+import { Screens } from '../actions/actions.jsx'
 
 /*
 function MainApp(state = initialState, action) {
+  return state
+}*/
+
+const screenDisplay = (state = Screens.SCREEN1, action) => {
   switch (action.type) {
-    case SET_VISIBILITY_FILTER:
-      return Object.assign({}, state, {
-        visibilityFilter: action.filter
-      })
+    case 'CHANGE_SCREEN':
+      return action.screen
     default:
       return state
   }
 }
-*/
-function MainApp(state = initialState, action) {
-  return state
-}
+
+export default screenDisplay
+

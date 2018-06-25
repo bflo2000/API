@@ -1,13 +1,11 @@
 import React from 'react'
-import ReactDOM from 'react-dom'
-import App from './App';
+import ReactDOM  from 'react-dom'
+import App from './App.jsx';
 import { Provider } from 'react-redux'
 import { createStore } from 'redux'
-import helloReducer from './reducers'
+import screenDisplay from './reducers/MainApp.jsx'
 
-function Welcome(props) {
-  return <h1>Hello, {props.name}</h1>;
-}
+const store = createStore(screenDisplay)
 
 ReactDOM.render(
   <Provider store={store}>

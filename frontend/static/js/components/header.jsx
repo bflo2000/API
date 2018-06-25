@@ -1,9 +1,8 @@
-class Header extends React.Component {
-   render() {
-      return (
-         <div>
-            <h1>Header</h1>
-         </div>
-      );
-   }
-}
+require('../styles.less')
+import React from 'react'
+
+const Header = () => (
+	<div id='api_header'></div>
+)
+
+export default Header

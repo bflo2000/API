@@ -2,10 +2,6 @@ from django.db import models
 from Images.models import Image
 from decimal import Decimal
 
-class BulletPoint(models.Model):
-	name = models.CharField(max_length=200, unique=True)
-	bullet = models.CharField(max_length=200, unique=True)
-
 class Amazon_Variation(models.Model):
 	image_sku = models.ForeignKey(Image, models.SET_NULL, null=True, blank = True)
 	item_sku = models.CharField(max_length = 200, unique = True)
@@ -32,11 +28,4 @@ class Amazon_Variation(models.Model):
 	keywords = models.CharField(max_length=4000, null=True, blank=True)
 	price = models.DecimalField(max_digits = 10, decimal_places=2, default=0)
 	sales = models.IntegerField(default=0)
-
-class Verification_Table(models.Model):
-	sku = models.OneToOneField(Amazon_Variation, on_delete=models.CASCADE)
-	size_verfied = models.BooleanField()
-	bullets_verified = models.BooleanField()
-	price_verified = models.BooleanField()
-	keywords_verified = models.BooleanField()
 

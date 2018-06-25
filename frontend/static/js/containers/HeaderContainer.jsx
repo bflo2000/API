@@ -1,21 +1,10 @@
 import { connect } from 'react-redux'
-import { helloWorld, reset } from './../actions'
-import Header from './../components/Header'
+//import { helloWorld, reset } from './../actions'
+import Header from './../components/Header.jsx'
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    message: state.helloWorld.message
-  }
-}
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  return {
-    onClick: () => dispatch(helloWorld()),
-    reset: () => dispatch(reset())
-  }
-}
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
+const HeaderContainer = connect(
+  //mapStateToProps,
+  //mapDispatchToProps
 )(Header)
+
+export default HeaderContainer

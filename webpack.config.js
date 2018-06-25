@@ -18,18 +18,31 @@ module.exports = {
     new BundleTracker({filename: './webpack-stats.json'}),
   ],
   module: {
-    rules: [
-      {
-        test: /\.jsx$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-        }
-      }
+    rules: [      
+        {
+          test: /\.jsx$/,
+          exclude: /node_modules/,
+          use: {
+            loader: 'babel-loader',
+          }
+        },
+        {
+          test: /\.less$/,
+          exclude: /node_modules/,
+          use: [{
+            loader: 'style-loader' // creates style nodes from JS strings
+            }, {
+            loader: 'css-loader' // translates CSS into CommonJS
+            }, {
+            loader: 'less-loader' // compiles Less to CSS
+            }]
+        }      
     ]
   },
   resolve: {
     extensions: ['*', '.js', '.jsx']
+  },
+ watchOptions: {
+        poll: true
   }
-
 };
