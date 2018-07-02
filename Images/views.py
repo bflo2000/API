@@ -58,7 +58,7 @@ class image_upload(views.APIView):
                 print ('File is not a CSV.')
                 return Response(template_name='failure_csv.html')
 
-            file_data = csv_file.read()
+            file_data = csv_file.read().decode('utf-8')
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
             if (consume_csv(reader, True)):
@@ -121,7 +121,9 @@ def consume_csv(reader, partial):
             item_sku = row['sku']
         except Exception as e:
             print('Exception', e, row)
-
+        
+	#remove any blank values
+        row = {k: v for k, v in row.items() if v is not ''}
         if partial == True:
 
             try:
@@ -130,7 +132,6 @@ def consume_csv(reader, partial):
                 error_string = "Couldn't find Sku: " + item_sku
                 error_log.write(error_string)
                 continue
-
             try:
                 serializer = ImageSerializer(image, data=row, partial=True)
                 if serializer.is_valid():
