@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import Viewport from './../components/Viewport.jsx'
 
 const mapStateToProps = state => {
-	return {currentScreen : state}
+	return {currentScreen : state.screenDisplay}
 }
 
 /*

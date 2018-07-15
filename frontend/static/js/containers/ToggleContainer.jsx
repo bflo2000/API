@@ -1,12 +1,13 @@
 import { connect } from 'react-redux'
 import { ToggleButton, ToggleButtonGroup } from 'react-bootstrap';
+import { changeRequest } from '../actions/actions.jsx'
 import React from 'react'
 
-const ToggleContainer = ({ bsStyle, value, children }) => (
-	<ToggleButtonGroup type="radio" name='options' defaultValue={1}>
-	  	<ToggleButton value={1}> INSERT </ToggleButton>
-	  	<ToggleButton value={2}> UPDATE </ToggleButton>
-	  	<ToggleButton value={3}> DELETE </ToggleButton>
+const ToggleContainer = ({ onChange, children }) => (
+	<ToggleButtonGroup type="radio" name='options' onChange= {(e) => onChange(e)} defaultValue={'POST'}>
+	  	<ToggleButton value={'POST'}> INSERT </ToggleButton>
+	  	<ToggleButton value={'PUT'}> UPDATE </ToggleButton>
+	  	<ToggleButton value={'DELETE'}> DELETE </ToggleButton>
 	</ToggleButtonGroup>
 )
 
@@ -15,11 +16,11 @@ const mapStateToProps = (state, ownProps) => ({
     value:ownProps.value
 })
 
-const mapDispatchToProps = (dispatch, ownProps) => ({
-  onClick: () => dispatch(changeScreen(ownProps.screen))
+const mapDispatchToProps = (dispatch) => ({
+  onChange: (value) => dispatch(changeRequest(value))
 })
 
 export default connect(
   mapStateToProps,
-  null
+  mapDispatchToProps
 )(ToggleContainer)

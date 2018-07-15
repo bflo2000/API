@@ -1,14 +1,15 @@
 import { connect } from 'react-redux'
-import { ToggleButton } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 import React from 'react'
 
-const ButtonContainer = ({ bsStyle, value, children }) => (
-  <ToggleButton value={value}> {children} </ToggleButton>
+const ButtonContainer = ({ bsStyle, id, children }) => (
+  <Button
+    bsStyle= {bsStyle} id={id}> {children} </Button>
 )
 
 const mapStateToProps = (state, ownProps) => ({
     bsStyle: ownProps.bsStyle,
-    value:ownProps.value
+    id:ownProps.id
 })
 
 const mapDispatchToProps = (dispatch, ownProps) => ({

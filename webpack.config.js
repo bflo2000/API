@@ -32,11 +32,22 @@ module.exports = {
           use: [{
             loader: 'style-loader' // creates style nodes from JS strings
             }, {
-            loader: 'css-loader' // translates CSS into CommonJS
+            loader: 'css-loader', // translates CSS into CommonJS
+            //options: { url: false }
             }, {
             loader: 'less-loader' // compiles Less to CSS
             }]
-        }      
+        },
+        {
+          test: /\.(gif|png|jpg|svg)$/,
+          use: [
+            {
+              loader: 'url-loader',
+              options: {
+              },
+            },
+          ],
+        }     
     ]
   },
   resolve: {

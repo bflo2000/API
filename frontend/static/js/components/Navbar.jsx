@@ -11,9 +11,6 @@ const Navbar = () => (
     <NavItem>
       <LinkContainer screen={'SCREEN2'}>Database Queries</LinkContainer>
     </NavItem>
-    <NavItem>
-      <LinkContainer screen={'SCREEN3'}>NavItem 1 balls</LinkContainer>
-    </NavItem>
   </Nav>
 )
 

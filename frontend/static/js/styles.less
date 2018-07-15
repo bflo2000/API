@@ -43,6 +43,7 @@ body {
 		height:100%;
 		width: 90%;
 		border-right: @border_thickness solid @border_color;
+		background-image: url("hypnotize1.jpg");
 
 		#operations{
 			display: flex;
@@ -63,25 +64,46 @@ body {
 				}
 
 				.btn:focus{
-					 color: rgba(255, 255, 255, 1);
-					 box-shadow: 0 5px 15px rgba(145, 92, 182, .4);
-					 border: 5px solid white;
-					 font-weight: bold;
+					color: rgba(255, 255, 255, 1);
+					box-shadow: 0 5px 15px rgba(145, 92, 182, .4);
+					border: 5px solid white;
+					font-weight: bold;
 
 				}
 			}
-		}
-  	}
+			#dropzone_container{
+				display: flex;
+				width: 100%;
+				height:15%;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;	
+
+				#dropzone_message{
+					display: flex;
+					height: 100%;
+					align-items: center;
+					align-content: center;
+					justify-content: center;	
+				}
+				.dropzone{
+					background-color: white;
+					width : 25%;
+  					height : 100%;
+  					border : 1px dotted black;
+				}
+
+				.dropzone:hover{
+					cursor: pointer;
+					background-color: grey;
+				}
+			}
+  		}
+	}
 }
 
 #footer {
 	height: 5%;
   	background-color: yellow;
   	border-top: @border_thickness solid @border_color;
-}
-
-
-.class1 .class2 {
-  background-color: #fff;
-  color: #2d5e8b;
 }
