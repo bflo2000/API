@@ -109,10 +109,10 @@ venv.bak/
 *.pyc
 *.zip
 *.rar
-.txt
-.jpg
-.jpeg
-.png
+*.txt
+*.jpg
+*.jpeg
+*.png
 
 # Node and Webpack files
 node_modules
@@ -132,4 +132,4 @@ __pycache__
 /Images/__pycache__/
 /Amazon/__pycache__/
 /ftp/
-/HP_API/frontend/static/js/config
+/HP_API/frontend/static/js/config/
