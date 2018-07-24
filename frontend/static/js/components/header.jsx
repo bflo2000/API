@@ -1,4 +1,3 @@
-require('../styles.less')
 import React from 'react'
 
 const Header = () => (

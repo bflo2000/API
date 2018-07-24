@@ -3,9 +3,10 @@ import ReactDOM  from 'react-dom'
 import App from './App.jsx';
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux'
-import MainApp from './reducers/MainApp.jsx'
-import img1 from './hypnotize1.jpg'
 import thunk from 'redux-thunk'
+import MainApp from './reducers/MainApp.jsx'
+import './styles.less'
+import './react-select.css'
 
 const store = createStore(MainApp, applyMiddleware(thunk))
 

@@ -1,16 +1,20 @@
 import axios from 'axios';
+import { getURL } from '../utils/OperationUtils.jsx'
 
+// navigation, for now
 export const changeScreen = screen => ({
   type: 'CHANGE_SCREEN',
   screen
 })
 
+// placeholding screen names
 export const screens = ({
   SCREEN1: 'SCREEN1',
   SCREEN2: 'SCREEN2',
   SCREEN3: 'SCREEN3'
 })
 
+// change RESTful request
 export const changeRequest = request => ({
   type: 'CHANGE_REQUEST',
   request
@@ -21,33 +25,66 @@ export const updateFile = file => ({
   file
 })
 
+// Images and Amazon table, for now
+export const tableSelect = table => ({
+  type: 'SELECT_TABLE',
+  table
+})
+
+// update the feedback viewport
+export const updateFeedback = feedback => ({
+  type: 'UPDATE_FEEDBACK',
+  feedback
+})
+
+// just three for now
 export const requests = ({
   POST: 'POST',
   PUT: 'PUT',
   DELETE: 'DELETE'
 })
 
-export function uploadCSV (file) {
-  updateFile(file)
+// Thunk returns a function, instead of an object
+
+export function uploadCSV () {
   return (dispatch, getState) => {
-    dispatch({type: 'IS_UPDATING'});
-    switch (getState().apiRequest.request){
-		case 'POST':
- 			axios.post('http://192.168.99.100:8000/images/upload', file).then(res => 
- 			{
-        		console.log(res);
-        		console.log(res.data);
-      		})  
-		case 'DELETE':
-			axios.delete('http://192.168.99.100:8000/images/upload', file) 
-		case 'PUT':
-			axios.put('http://192.168.99.100:8000/images/upload', file)
+
+  	// update state
+    dispatch({type: 'IS_UPDATING'})
+    // get request, file, and url from state tree
+    let request_type = getState().apiRequest.request
+    let file = getState().apiRequest.file
+    let url = getURL(getState().apiRequest.table)
+    // prepare form data
+	let data = new FormData()
+	data.append('csv_file', file[0])
+
+	if(url){
+	    switch (request_type){
+			case 'POST':
+	 			axios.post(url, data)
+	 			.then(res => {
+	 				if(res.status == 202){
+						let message = res.data
+						dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+	        		}
+	      		})
+	      		.catch(error => {
+	      			let message = error.response.data
+	      			dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+	  			})
+	      		break;  
+			case 'DELETE':
+				axios.delete(url, file) 
+				break
+			case 'PUT':
+				axios.put(url, file)
+				break
+		}
 	}
-    /*.then((res) =>{
-        dispatch({type: CREATE_ORGANIZATION_SUCCESS, payload: res});
-    })
-    .catch((error)=> {
-        dispatch({type: CREATE_ORGANIZATION_FAILURE, payload: error});
-    })*/
+	else{
+		let message = "Please choose a table from the dropdown list."
+		dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+	}
   }
 }

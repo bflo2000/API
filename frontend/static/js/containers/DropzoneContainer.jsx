@@ -1,26 +1,22 @@
 import { connect } from 'react-redux'
-import { uploadCSV } from '../actions/actions.jsx'
+import { updateFile } from '../actions/actions.jsx'
 import React from 'react'
 import Dropzone from 'react-dropzone';
 
-
 //will use backend validation as windows has a borked interpretation of the csv mimetype
-const DropzoneContainer = ({ onDrop, children }) => (
+const DropzoneContainer = ({ onDrop }) => (
 		<Dropzone className='dropzone' onDrop={onDrop}>
 			<p id='dropzone_message'>Click or drop CSV here.</p>
-		</Dropzone>)
-
-const mapStateToProps = (state, ownProps) => ({
-
-})
+		</Dropzone>
+	)
 
 const mapDispatchToProps = (dispatch) => ({
   onDrop: (file) => {
-  	dispatch(uploadCSV(file))
+  	dispatch(updateFile(file))
   }
 })
 
 export default connect(
-  mapStateToProps,
+  null,
   mapDispatchToProps
 )(DropzoneContainer)

@@ -1,6 +1,8 @@
 @border_thickness: 5px;
 @border_color: black;
 
+// using less as a drawing board for now
+
 body {
 	width: 1200px;
 	height: 900px;
@@ -24,7 +26,6 @@ body {
 	height: 5%;
   	background-color: green;
   	border-bottom: @border_thickness solid @border_color;
-
 }
 
 #api_mainscreen {
@@ -71,6 +72,15 @@ body {
 
 				}
 			}
+			#dropdown_container{
+				display: flex;
+				width: 100%;
+				height: 10%;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+			}
+
 			#dropzone_container{
 				display: flex;
 				width: 100%;
@@ -96,6 +106,27 @@ body {
 				.dropzone:hover{
 					cursor: pointer;
 					background-color: grey;
+				}
+			}
+			#upload_button_container{
+				display: flex;
+				width: 100%;
+				height:10%;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;					
+			}
+			#server_feedback_container{
+				display: flex;
+				width: 100%;
+				height: 50%;
+				flex-direction: column;
+				align-items: center;
+
+				#feedback_area{
+					width: 80%;
+					height: 90%;
+					background-color: lightgray;
 				}
 			}
   		}
