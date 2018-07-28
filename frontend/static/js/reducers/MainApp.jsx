@@ -11,7 +11,7 @@ const screenDisplay = (state = screens.SCREEN1, action) => {
   }
 }
 
-//API request state here
+// API request state here
 let initialRequestState = {
   request: requests.POST,
   file: null,
@@ -25,13 +25,13 @@ const apiRequest = (state = initialRequestState, action) => {
     case 'CHANGE_REQUEST':
       return {...state, request:action.request}
     case 'UPDATE_FILE':
-      return {...state, file:action.file}
+      return {...state, file:action.file, status: 'Loaded'}
     case 'SELECT_TABLE':
       return {...state, table:action.table}
     case 'IS_UPDATING':
-      return {...state, status:'locked'}
+      return {...state, status:'Locked'}
     case 'UPDATE_FEEDBACK':
-      return {...state, feedback: action.feedback}
+      return {...state, feedback: action.feedback, status: action.status}
     default:
       return state
   }

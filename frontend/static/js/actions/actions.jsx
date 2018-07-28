@@ -47,10 +47,12 @@ export const requests = ({
 // Thunk returns a function, instead of an object
 
 export function uploadCSV () {
+
   return (dispatch, getState) => {
 
   	// update state
     dispatch({type: 'IS_UPDATING'})
+
     // get request, file, and url from state tree
     let request_type = getState().apiRequest.request
     let file = getState().apiRequest.file
@@ -66,25 +68,46 @@ export function uploadCSV () {
 	 			.then(res => {
 	 				if(res.status == 202){
 						let message = res.data
-						dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+						dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Ready', file: ''})
 	        		}
 	      		})
 	      		.catch(error => {
 	      			let message = error.response.data
-	      			dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+	      			dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Loaded'})
 	  			})
 	      		break;  
 			case 'DELETE':
-				axios.delete(url, file) 
+				// axios does not accept a request body. Use config.data.
+				axios.delete(url, {data: data})
+				.then(res => {
+	 				if(res.status == 202){
+						let message = res.data
+						dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Ready', file: ''})
+	        		}
+	      		})
+	      		.catch(error => {
+	      			let message = error.response.data
+	      			dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Loaded'})
+	  			}) 
 				break
 			case 'PUT':
-				axios.put(url, file)
-				break
+				axios.put(url, data)
+	 			.then(res => {
+	 				if(res.status == 202){
+						let message = res.data
+						dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Ready', file: ''})
+	        		}
+	      		})
+	      		.catch(error => {
+	      			let message = error.response.data
+	      			dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Loaded'})
+	  			})
+	      		break;  
 		}
 	}
 	else{
 		let message = "Please choose a table from the dropdown list."
-		dispatch({type: 'UPDATE_FEEDBACK', feedback: message})
+		dispatch({type: 'UPDATE_FEEDBACK', feedback: message, status: 'Loaded'})
 	}
   }
 }

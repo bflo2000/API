@@ -1,4 +1,4 @@
-from rest_framework import generics, views
+from rest_framework import generics, views, status
 from Amazon.models import Amazon_Variation
 from Amazon.serializers import Amazon_Variation_Serializer
 from Images.models import Image
@@ -29,21 +29,24 @@ class amazon_variation_upload(views.APIView):
 
 	def post(self, request):
 		try:
-			csv_file = request.FILES['csv_file']
+			csv_file = request.data['csv_file']
 
 			if not csv_file.name.endswith('.csv'):
-				print ('File is not a CSV.')
-				return Response(template_name='failure_csv_amazon.html')
+				data = "The file you have provided is not a .csv file. Please upload a .csv file."
+				response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+				return Response(data, response_status)
 
-			reader = csv.DictReader(self.decode_utf8(csv_file))
-
-			if (self.consume_csv(reader)):
-				print ('is')
+			reader = csv.DictReader(decode_utf8(csv_file))
+			reader_response = consume_csv(reader, False)
+			
+			if (reader_response[0]):
+				response_status = status.HTTP_202_ACCEPTED
+				response_data = reader_response[1]
+				return Response(response_data, response_status)
 			else:
-				print ('not')
-				return Response(template_name='failure_csv_amazon.html')
-
-			return Response(template_name='success_csv_amazon.html')
+				response_status = status.HTTP_400_BAD_REQUEST
+				response_data = reader_response[1]
+				return Response(response_data, response_status)
 
 		except Exception as error:
 			print (error)
@@ -125,63 +128,58 @@ class amazon_variation_sftp(views.APIView):
 				
 		return Response(template_name='success_csv_amazon.html')
 
-
 def consume_csv(reader, partial):
-	time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-	filename = "ftp/error_log_" + time +  ".txt"
+
 	number_of_records_written = 0
 
-	error_log = open(filename, 'a+')
-
 	for row in reader:
+		log = ''
 
 		try:
 			item_sku = row['item_sku']
-		except Exception as e:
-			print('Exception', e, row)
+		except:
+			log = "Please format an item_sku field."
+			return (False, log)
+
+		#remove any blank values
+		row = {k: v for k, v in row.items() if v is not ''}
 
 		if partial == True:
 			try:
 				variation = Amazon_Variation.objects.get(item_sku=item_sku)
-			except Exception as error:
-				error_string = "Couldn't find Sku: " + item_sku
-				error_log.write(error_string)
+			except Amazon_Variation.DoesNotExist:
+				log = log + item_sku + ' : ' + 'Not found.' + '\n'
 				continue
 			try:
 				serializer = Amazon_Variation_Serializer(variation, data=row, partial=True)
 				if serializer.is_valid():
 					serializer.save()
+					log = log + item_sku + ' updated successfully.\n'
 				else:
-					error_string = item_sku + " "
-
 					for key, value in serializer.errors.items():
-						error_string = error_string + key + ": " + value[0]
-
-					error_log.write(error_string)
+						log = log + key + ": " + value[0] + '\n'
 					continue
 
 			except Exception as error:
-				error_string = item_sku + " " + error
-				error_log.write(error_string)
+				log = item_sku + " " + error + '\n'
 				continue                
 		else:
 			try:
 				serializer = Amazon_Variation_Serializer(data=row)
 
-				if serializer.is_valid(raise_exception=True):
+				if serializer.is_valid():
 					serializer.save()
 					number_of_records_written += 1
 				else:
-					error_log.write(serializer.errors[0])
+					for key, value in serializer.errors.items():
+						log = log + item_sku + ' : '+ key + ": " + value[0] + '\n'
 
 			except Exception as error:
-				string = "Validation error in sku: " + row['item_sku'] + '\n'
-				error_log.write(string)
+				print(error)
+				continue
 
 	print('Wrote ' + str(number_of_records_written) + ' records.')
-	error_log.close()
-
-	return True
+	return (True, log)
 
 class category_report_upload(views.APIView):
 	renderer_classes = (TemplateHTMLRenderer,)
@@ -198,7 +196,6 @@ class category_report_upload(views.APIView):
 				return Response(template_name='failure_csv_amazon.html')
 
 			file_data = csv_file.read().decode("utf-8")
-			#file_data = csv_file.read()
 			lines = file_data.split("\n")
 			reader = csv.DictReader(lines)
 
@@ -372,5 +369,5 @@ def consume_category_report(reader):
 
 def decode_utf8(input_iterator):
 		
-    for l in input_iterator:
-        yield l.decode('utf-8')
+	for l in input_iterator:
+		yield l.decode('utf-8')

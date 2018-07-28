@@ -11,7 +11,8 @@ const DropdownContainer = (props) => (
 		onChange = {props.onChange}
 		options = {[
           { value: 'Images', label: 'Images' },
-          { value: 'Amazon', label: 'Amazon' },
+          { value: 'Amazon Variations', label: 'Amazon Variations' },
+          { value: 'Amazon Categories', label: 'Amazon Categories' }
         ]}
     />
 )
