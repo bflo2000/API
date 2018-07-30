@@ -28,6 +28,7 @@ class amazon_variation_upload(views.APIView):
 		return Response(template_name='upload_csv_amazon.html')
 
 	def post(self, request):
+
 		try:
 			csv_file = request.data['csv_file']
 
@@ -52,26 +53,65 @@ class amazon_variation_upload(views.APIView):
 			print (error)
 			return Response(template_name='failure_csv_amazon.html')
 	
+	def put(self, request):
+
+		try:
+			csv_file = request.data['csv_file']
+
+			if not csv_file.name.endswith('.csv'):
+				data = "The file you have provided is not a .csv file. Please upload a .csv file."
+				response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+				return Response(data, response_status)
+
+			file_data = csv_file.read().decode("utf-8")  
+			lines = file_data.split("\n")
+			reader = csv.DictReader(lines)
+
+			reader_response = consume_csv(reader, True)
+
+			if (reader_response[0]):
+				response_status = status.HTTP_202_ACCEPTED
+				response_data = reader_response[1]
+				return Response(response_data, response_status)
+			else:
+				response_status = status.HTTP_400_BAD_REQUEST
+				response_data = reader_response[1]
+				return Response(response_data, response_status)
+
+		except Exception as error:
+			data = "CSV required in upload."
+			response_status = status.HTTP_400_BAD_REQUEST
+			return Response(data, response_status)	
+				
 	def delete(self, request):
 		
-		csv_file = request.FILES['csv_file']
-
-		if not csv_file.name.endswith('.csv'):
-			print ('File is not a CSV.')
-			return Response(template_name='failure_csv_amazon.html')
-
-		reader = csv.DictReader(self.decode_utf8(csv_file))
+		log = ""
 		
-		for row in reader:
-			try:
-				item_sku = row['item_sku_delete']
-				obj = Amazon_Variation.objects.get(item_sku=item_sku)
-				obj.delete()
-			except Exception as e:
-				print (e)
-				continue	
-				
-		return Response(template_name='success_csv_amazon.html')
+		try:	
+			csv_file = request.data['csv_file']
+
+			if not csv_file.name.endswith('.csv'):
+				data = "The file you have provided is not a .csv file. Please upload a .csv file."
+				response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+				return Response(data, response_status)
+			
+			for row in reader:
+				try:
+					item_sku = row['item_sku_delete']
+					obj = Amazon_Variation.objects.get(item_sku=item_sku)
+					obj.delete()
+					log = log + item_sku + ' : ' + 'Deleted successfully.' + '\n'
+				except Amazon_Variation.DoesNotExist:
+					log = log + item_sku + ' : ' + 'Not found.' + '\n'
+					continue	
+					
+		except:
+			response_message = "Please format an item_sku_delete field. This is to prevent any accidental deletes."
+			response_status = status.HTTP_400_BAD_REQUEST
+			return Response(response_message, response_status)  
+
+		response_status = status.HTTP_202_ACCEPTED
+		return Response(log, response_status)
 
 	def decode_utf8(self, input_iterator):
 		
@@ -129,11 +169,10 @@ class amazon_variation_sftp(views.APIView):
 		return Response(template_name='success_csv_amazon.html')
 
 def consume_csv(reader, partial):
-
+	log = ''
 	number_of_records_written = 0
 
 	for row in reader:
-		log = ''
 
 		try:
 			item_sku = row['item_sku']
@@ -155,6 +194,7 @@ def consume_csv(reader, partial):
 				if serializer.is_valid():
 					serializer.save()
 					log = log + item_sku + ' updated successfully.\n'
+					continue
 				else:
 					for key, value in serializer.errors.items():
 						log = log + key + ": " + value[0] + '\n'
