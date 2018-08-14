@@ -35,7 +35,6 @@ class image_upload(views.APIView):
             file_data = csv_file.read().decode("utf-8")  
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
-
             reader_response = consume_csv(reader, False)
 
             if (reader_response[0]):
@@ -48,6 +47,7 @@ class image_upload(views.APIView):
                 return Response(response_data, response_status)
        
         except Exception as error:
+            print(error)
             data = "CSV required in upload."
             response_status = status.HTTP_400_BAD_REQUEST
             return Response(data, response_status)
@@ -117,6 +117,7 @@ class image_upload(views.APIView):
                 return Response(response_data, response_status)
 
         except Exception as error:
+            print(error)
             data = "CSV required in upload."
             response_status = status.HTTP_400_BAD_REQUEST
             return Response(data, response_status)
@@ -171,7 +172,6 @@ def consume_csv(reader, partial):
         
 	    #remove any blank values
         row = {k: v for k, v in row.items() if v is not ''}
-
         # if partial, update records
         if partial:
             try:
@@ -179,6 +179,11 @@ def consume_csv(reader, partial):
             except Image.DoesNotExist:
                 log = log + sku + ' : ' + 'Not found.' + '\n'
                 continue
+
+            # special functionality for changing the sku
+            if row['new_sku']:
+                row['sku'] = row['new_sku']
+            
             try:
                 serializer = ImageSerializer(image, data=row, partial=True)
                 if serializer.is_valid():
