@@ -9,7 +9,7 @@ class Amazon_Variation(models.Model):
 	product_description = models.CharField(max_length = 2000)
 	asin = models.CharField(max_length=64, null=True, blank=True)
 	catalog_number = models.CharField(max_length=200, null=True, blank=True)
-	part_number = models.CharField(max_length=200, null=True, blank=True)
+	manufacturer_part_number = models.CharField(max_length=200, null=True, blank=True)
 	size_name = models.CharField(max_length=200, null=True, blank=True)
 	variation_theme = models.CharField(max_length=200, null=True, blank=True)
 	product_tax_code = models.CharField(max_length=200, null=True, blank=True)

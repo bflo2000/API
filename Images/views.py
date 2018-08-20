@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import generics, views, status
 from Images.models import Image
 from Images.serializers import ImageSerializer
@@ -91,8 +92,7 @@ class image_upload(views.APIView):
             response_status = status.HTTP_400_BAD_REQUEST
             return Response(data, response_status)
 
-    def put(self, request):
-
+    def patch(self, request):
         try:
             csv_file = request.data['csv_file']
 
@@ -115,10 +115,12 @@ class image_upload(views.APIView):
                 response_status = status.HTTP_400_BAD_REQUEST
                 response_data = reader_response[1]
                 return Response(response_data, response_status)
+        except IntegrityError as e:
+            print(e.message)
 
         except Exception as error:
             print(error)
-            data = "CSV required in upload."
+            data = "Error during upload"
             response_status = status.HTTP_400_BAD_REQUEST
             return Response(data, response_status)
 
@@ -170,8 +172,9 @@ def consume_csv(reader, partial):
             log = "Please format a sku field."
             return (False, log)
         
-	    #remove any blank values
+	#remove any blank values
         row = {k: v for k, v in row.items() if v is not ''}
+        
         # if partial, update records
         if partial:
             try:
@@ -181,8 +184,8 @@ def consume_csv(reader, partial):
                 continue
 
             # special functionality for changing the sku
-            if row['new_sku']:
-                row['sku'] = row['new_sku']
+            #if row['new_sku']:
+            #    row['sku'] = row['new_sku'] 
             
             try:
                 serializer = ImageSerializer(image, data=row, partial=True)
@@ -192,7 +195,7 @@ def consume_csv(reader, partial):
                 else:
                     for key, value in serializer.errors.items():
                         log = log + sku  + ": " + value[0] + '\n'
-
+                        
             except Exception as error:
                 error_string = sku + " " + error
                 error_log.write(error_string)
