@@ -2,7 +2,6 @@ from rest_framework import generics, views, status
 from Images.models import Image
 from Images.serializers import ImageSerializer
 from rest_framework.response import Response
-
 import csv
 import glob
 
