@@ -1,4 +1,4 @@
 
 export const config = {
-	url : 'http://192.168.99.100:8000'
+	url : 'http://172.18.0.3:8000'
 }

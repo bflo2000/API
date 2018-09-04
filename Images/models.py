@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Image(models.Model):
     source_identifier = models.CharField(max_length=64, null = True, blank=True)
     sku = models.CharField(max_length=16, unique=True, primary_key=True)
@@ -33,3 +34,5 @@ class Image(models.Model):
     original_keywords = models.CharField(max_length=2000, null=True, blank=True)
     additional_keywords = models.CharField(max_length=2000, null=True, blank=True)
     additional_keywords_source = models.CharField(max_length=200, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True)
+    last_modified = models.DateTimeField(auto_now=True, null=True)
