@@ -28,4 +28,5 @@ class Amazon_Variation(models.Model):
 	keywords = models.CharField(max_length=4000, null=True, blank=True)
 	price = models.DecimalField(max_digits = 10, decimal_places=2, default=0)
 	sales = models.IntegerField(default=0)
-
+	date_created = models.DateTimeField(auto_now_add=True, null=True)
+	last_modified = models.DateTimeField(auto_now=True, null=True)
