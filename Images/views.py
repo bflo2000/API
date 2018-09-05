@@ -118,6 +118,8 @@ class ImagesSFTP(views.APIView):
 def consume_csv(reader, partial):
 
     log = ''
+    mutations = 0
+    errors = 0
 
     for row in reader:
         try:
@@ -132,22 +134,26 @@ def consume_csv(reader, partial):
             log = "Please format a collection field."
             return False, log
 
-        # remove any blank values
-        # row = {k: v for k, v in row.items() if v is not ''}
-
         # if partial, update records
         if partial:
+
+            # remove any blank values
+            row = {k: v for k, v in row.items() if v is not ''}
+
             try:
                 image = Image.objects.get(sku=item_sku)
             except Exception as error:
                 log = log + "Couldn't find image sku: " + item_sku + '\n'
+                errors += 1
                 continue
             try:
                 serializer = ImageSerializer(image, data=row, partial=True)
                 if serializer.is_valid():
                     serializer.save()
+                    mutations += 1
                 else:
                     error_string = item_sku + " "
+                    errors += 1
 
                     for key, value in serializer.errors.items():
                         log = log + error_string + key + ": " + value[0] + '\n'
@@ -155,21 +161,26 @@ def consume_csv(reader, partial):
 
             except Exception as error:
                 log = log + item_sku + " " + error + '\n'
+                errors += 1
                 continue
         else:
             try:
                 serializer = ImageSerializer(data=row)
                 if serializer.is_valid():
                     serializer.save()
-                    log = log + item_sku + ' added successfully.\n'
+                    # log = log + item_sku + ' added successfully.\n'
+                    mutations += 1
                 else:
+                    errors += 1
 
                     for key, value in serializer.errors.items():
                         log = log + item_sku + ' : '+ key + ": " + value[0] + '\n'
                     continue
 
             except Exception as error:
+                errors += 1
                 log = log + item_sku + " " + error + '\n'
                 continue
 
+    log = 'Mutations: ' + str(mutations) + '\n' + 'Errors: ' + str(errors) + '\n' + log
     return True, log
