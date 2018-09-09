@@ -64,17 +64,23 @@ class ImageUpload(views.APIView):
             file_data = csv_file.read().decode('utf-8')
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
-            if (consume_csv(reader, True)):
-                print ('is')
-            else:
-                print ('not')
-                return Response(template_name='failure_csv.html')
 
-            return Response(template_name='success_csv.html')
+            reader_response = consume_csv(reader, False)
+
+            if reader_response[0]:
+                response_status = status.HTTP_202_ACCEPTED
+                response_data = reader_response[1]
+                return Response(response_data, response_status)
+            else:
+                response_status = status.HTTP_400_BAD_REQUEST
+                response_data = reader_response[1]
+                return Response(response_data, response_status)
 
         except Exception as error:
-            print (error)
-            return Response(template_name='failure_csv.html')
+            data = "CSV required in upload."
+            print(error)
+            response_status = status.HTTP_400_BAD_REQUEST
+            return Response(data, response_status)
 
 
 class ImagesSFTP(views.APIView):
