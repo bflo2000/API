@@ -134,11 +134,12 @@ def consume_csv(reader, partial):
             log = "Please format a sku field."
             return False, log
 
-        try:
-            row['collection']
-        except Exception as e:
-            log = "Please format a collection field."
-            return False, log
+        if not partial:
+            try:
+                row['collection']
+            except Exception as e:
+                log = "Please format a collection field."
+                return False, log
 
         # if partial, update records
         if partial:
