@@ -1,4 +1,6 @@
-from rest_framework import generics, views
+from rest_framework import generics
+from rest_framework import views
+from rest_framework import status
 from Amazon.models import Amazon_Variation
 from Amazon.serializers import Amazon_Variation_Serializer
 from Images.models import Image
@@ -6,8 +8,6 @@ from rest_framework.response import Response
 from rest_framework.renderers import TemplateHTMLRenderer
 import csv
 import glob
-import os
-import datetime
 from django.db import IntegrityError
 
 
@@ -54,8 +54,9 @@ class AmazonVariationUpload(views.APIView):
         csv_file = request.FILES['csv_file']
 
         if not csv_file.name.endswith('.csv'):
-            print ('File is not a CSV.')
-            return Response(template_name='failure_csv_amazon.html')
+            data = "The file you have provided is not a .csv file. Please upload a .csv file."
+            response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+            return Response(data, response_status)
 
         reader = csv.DictReader(self.decode_utf8(csv_file))
         
@@ -175,37 +176,71 @@ def consume_csv(reader, partial):
 
     return True, log
 
-class category_report_upload(views.APIView):
-    renderer_classes = (TemplateHTMLRenderer,)
+
+class CategoryReportUpload(views.APIView):
 
     def get(self,request):
         return Response(template_name='upload_csv_amazon.html')
 
     def post(self, request):
+
         try:
             csv_file = request.FILES['csv_file']
 
             if not csv_file.name.endswith('.csv'):
-                print ('File is not a CSV.')
-                return Response(template_name='failure_csv_amazon.html')
+                data = "The file you have provided is not a .csv file. Please upload a .csv file."
+                response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+                return Response(data, response_status)
 
             file_data = csv_file.read().decode("utf-8")
-            #file_data = csv_file.read()
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
 
-            if (consume_category_report(reader)):
-                print ('is')
-            else:
-                print ('not')
-                return Response(template_name='failure_csv_amazon.html')
+            reader_response = consume_category_report(reader)
 
-            return Response(template_name='success_csv_amazon.html')
+            if reader_response[0]:
+                response_status = status.HTTP_202_ACCEPTED
+                response_data = reader_response[1]
+                return Response(response_data, response_status)
+            else:
+                response_status = status.HTTP_400_BAD_REQUEST
+                response_data = reader_response[1]
+                return Response(response_data, response_status)
 
         except Exception as error:
-            print (error)
-            return Response(template_name='failure_csv_amazon.html')
-    
+            data = "CSV required in upload."
+            response_status = status.HTTP_400_BAD_REQUEST
+            return Response(data, response_status)
+
+    def delete(self, request):
+
+        mutations = 0
+        errors = 0
+        csv_file = request.FILES['csv_file']
+
+        if not csv_file.name.endswith('.csv'):
+            data = "The file you have provided is not a .csv file. Please upload a .csv file."
+            response_status = status.HTTP_415_UNSUPPORTED_MEDIA_TYPE
+            return Response(data, response_status)
+
+        reader = csv.DictReader(decode_utf8(csv_file))
+
+        for row in reader:
+            try:
+                item_sku = row['item_sku_delete']
+                obj = Amazon_Variation.objects.get(item_sku=item_sku)
+                obj.delete()
+                mutations += 1
+
+            except Exception as e:
+                data = "Please include an item_sku delete field."
+                response_status = status.HTTP_400_BAD_REQUEST
+                return Response(data, response_status)
+
+        log = 'Mutations: ' + str(mutations) + '\n'
+        response_status = status.HTTP_202_ACCEPTED
+        return Response(log, response_status)
+
 class category_report_sftp(views.APIView):
 
     def get(self,request):
@@ -227,20 +262,17 @@ class category_report_sftp(views.APIView):
             print (error)
             return Response(template_name='failure_csv_amazon.html')
 
+
 def consume_category_report(reader):
 
-    time = datetime.datetime.now().strftime("%y-%m-%d-%H-%M")
-    filename = "ftp/amazon_error_log_" + time +  ".txt"
-    number_of_records_written = 0
-
-    error_log = open(filename, 'a+')
+    log = ''
+    mutations = 0
+    errors = 0
 
     for row in reader:
 
         data = {}
-        #print(row)
-        #print(row['item_sku'])
-        #exit()
+
         if row['parent_child'] == 'parent':
             data['is_parent'] = True
             parent_sku = row['item_sku']
@@ -264,6 +296,7 @@ def consume_category_report(reader):
         except:
             data['is_orphan'] = True
             image = ""
+
         data['item_sku'] = row['item_sku']
 
         # retrieve the product description - and check unicode
@@ -290,7 +323,6 @@ def consume_category_report(reader):
                 bullet1 = bullet1[:200]
                 data['check_bullets'] = True
         except Exception as error:
-            error_log.write(error)
             bullet1 = ''
 
         data['bullet1'] = bullet1
@@ -301,8 +333,9 @@ def consume_category_report(reader):
             if len(bullet5) > 200:
                 bullet5 = bullet5[:200]
                 data['check_bullets'] = True
+
         except Exception as error:
-            error_log.write(error)
+            log = log + data['item_sku'] + " " + error + '\n'
 
         try:
             test = bullet5.encode('latin1')
@@ -347,20 +380,21 @@ def consume_category_report(reader):
             serializer = Amazon_Variation_Serializer(data=data)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
-                number_of_records_written += 1
+                mutations += 1
             else:
-                error_log.write(serializer.errors[0])
-        except IntegrityError as e:
-            print(e)
-        except Exception as error:
-            string = "Validation error in sku: " + row['item_sku'] + '\n'
-            error_log.write(string)
-            #print(string)
-            #print(error.detail)
-    print('Wrote ' + str(number_of_records_written) + ' records.')
-    error_log.close()
+                errors += 1
+                for key, value in serializer.errors.items():
+                    log = log + data['item_sku'] + ' : ' + key + ": " + value[0] + '\n'
 
-    return True
+        except IntegrityError as e:
+            errors += 1
+            log = log + data['item_sku'] + ' : Integrity Error.' + '\n'
+        except Exception as error:
+            errors += 1
+            log = log + data['item_sku'] + " " + error + '\n'
+
+    log = 'Mutations: ' + str(mutations) + '\n' + 'Errors: ' + str(errors) + '\n' + log
+    return True, log
 
 def decode_utf8(input_iterator):
         

@@ -175,7 +175,6 @@ def consume_csv(reader, partial):
                 serializer = ImageSerializer(data=row)
                 if serializer.is_valid():
                     serializer.save()
-                    # log = log + item_sku + ' added successfully.\n'
                     mutations += 1
                 else:
                     errors += 1
