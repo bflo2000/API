@@ -65,7 +65,7 @@ class ImageUpload(views.APIView):
             lines = file_data.split("\n")
             reader = csv.DictReader(lines)
 
-            reader_response = consume_csv(reader, False)
+            reader_response = consume_csv(reader, True)
 
             if reader_response[0]:
                 response_status = status.HTTP_202_ACCEPTED
