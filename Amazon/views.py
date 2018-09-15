@@ -209,6 +209,7 @@ class CategoryReportUpload(views.APIView):
 
         except Exception as error:
             data = "CSV required in upload."
+            print(error)
             response_status = status.HTTP_400_BAD_REQUEST
             return Response(data, response_status)
 
@@ -270,7 +271,6 @@ def consume_category_report(reader):
     errors = 0
 
     for row in reader:
-
         data = {}
 
         if row['parent_child'] == 'parent':
@@ -391,7 +391,8 @@ def consume_category_report(reader):
             log = log + data['item_sku'] + ' : Integrity Error.' + '\n'
         except Exception as error:
             errors += 1
-            log = log + data['item_sku'] + " " + error + '\n'
+            for key, value in error.detail.items():
+                log = log + data['item_sku'] + ' : ' + key + ": " + value[0] + '\n'
 
     log = 'Mutations: ' + str(mutations) + '\n' + 'Errors: ' + str(errors) + '\n' + log
     return True, log
